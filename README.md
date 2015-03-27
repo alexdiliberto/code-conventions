@@ -1,15 +1,236 @@
 Code Conventions
 ======================
-*Last Updated: September 20, 2013 11:46 AM*
+*Last Updated: March 27, 2015 3:59 PM*
 
-This document contains a very detailed outline of the most important JavaScript and CSS code conventions.
+This document contains a very detailed outline of my most important JavaScript and CSS code conventions.
 
-When working with a team of developers, you are all likely developing separate pieces of code. Ideally, I believe that those separate pieces of code should all uniformly look like they were produced by one developer. There are many reasons behind this:
+When each member of our team is collaborating on a project, we are all likely developing separate pieces of code. Ideally, each of those separate pieces of code should uniformly look like they were produced by a single developer. There are many reasons behind this:
 
 - Easier to read and quickly inspect
 - Uniform patterns allow others to quickly understand basic flow, meaning, and functionality
 - The long-term value of software to an organization is in direct proportion to the quality of the codebase.
 - Neatness counts
+
+You can see some of our customized, high-level guidelines at the following site: [jsCode.org](http://jscode.org/03c498)
+
+
+
+File Structure / Name Conventions
+------------------------
+### Ember JS Project
+In general, the application file organization should align with the following structure:
+
+```
+  my-project/
+  ├── app/
+  │   ├── components/
+  │   │   ├── j-input.js
+  │   │   ├── j-password-field.js
+  │   │   └── ...
+  │   ├── controllers/
+  │   │   ├── accounts/
+  │   │   │   └── summary.js
+  │   │   ├── application.js
+  │   │   ├── authenticated.js
+  │   │   └── ...
+  │   ├── helpers/
+  │   │   ├── date.js
+  │   │   └── ...
+  │   ├── initializers/
+  │   │   ├── liveperson.js
+  │   │   └── ...
+  │   ├── mixins/
+  │   │   ├── body-event-listener.js
+  │   │   └── ...
+  │   ├── models/
+  │   │   ├── account.js
+  │   │   ├── beneficiary.js
+  │   │   └── ...
+  │   ├── routes/
+  │   │   ├── account-dashboard.js
+  │   │   ├── application.js
+  │   │   ├── authenticated.js
+  │   │   ├── login.js
+  │   │   └── ...
+  │   ├── styles/
+  │   │   ├── app.scss
+  │   │   └── ...
+  │   ├── templates/
+  │   │   ├── components/
+  │   │   │   └── j-input.js
+  │   │   ├── accounts.hbs
+  │   │   ├── alerts.hbs
+  │   │   └── ...
+  │   ├── utils/
+  │   │   ├── constants.js
+  │   │   └── ...
+  │   ├── views/
+  │   │   ├── footer.js
+  │   │   ├── header.js
+  │   │   └── ...
+  │   ├── app.js
+  │   ├── index.html
+  │   ├── router.js
+  │   └── transitions.js
+  │
+  └── ...
+
+```
+
+- All route and templates names will be dasherized. (Names which are more than 1 word will be separated by the dash "-" character.)
+- All *resources* will be in the top-level `templates/` directory.
+- All *routes* will be pulled from `templates/` sub-directories matching their parent resource.
+- All components will be placed in `templates/components/`
+- All names corresponding to the same route will be the identical and will be placed into the appropriate directories. (controllers/, routes/, views/, templates/, etc.)
+
+
+Git
+------------------------
+### Creating feature branches
+
+
+```
+# Start the feature
+git checkout -b feature/my-new-feature
+
+# Sync a copy of the branch on the remote server
+git push -u origin feature/my-new-feature
+
+# Make individual atomic commits then push
+git commit
+git commit
+git commit
+...
+git push
+
+# For completing a feature get the most recent version of all the code.
+git pull
+
+# Merge the develop branch into the feature branch to make sure that nothing is outdated
+git merge develop
+
+# Finish the feature and Create PR
+git push
+
+# Delete the remote branch once merged
+git push origin :feature/my-new-feature
+```
+
+### Commit Contents
+- Every commit should be constrained to a single piece of functionality and its dependencies. (Atomicity)
+- Try to find good points in the development process to pause and commit pieces of your effort–a good rule of thumb is that any time you feel pleased that you're making progress you should commit your changes.
+- Don't make changes to unrelated functionality inside of a single commit.
+- If you encounter a bug when developing a new feature or another issue that needs to be addressed you can follow the example below.
+
+### Commit Messages
+Write [good commit messages](http://robots.thoughtbot.com/post/48933156625/5-useful-tips-for-a-better-commit-message). Every commit message should explain in detail what it is the commit is trying to accomplish. The people reviewing the commit should be able to identify whether or not they should be the person reviewing it based solely upon the commit message.
+
+This means that you should include:
+
+- What types of functionality you worked on (eg. JS, CSS, HBS). This doesn't have to be explicit, "update the login route event handler" would work to identify that you worked on JS.
+- Explanations of why you used that particular approach to solve the problem, if necessary.
+- A brief description of next steps if there is additional work that needs to be done.
+- Do not remove default populated contents from commit messages. For example, merge commits will by default say what branch it was and what conflicts occurred during the merge.
+
+### Example Bug Workflow
+
+```
+# Store your current working state in your feature branch
+git stash save "currently working on foo"
+
+# Move to the develop branch or a feature branch to address the issue
+git checkout develop
+
+# Fix Code and Commit the change
+git add my-fix.js
+git commit
+
+# Write a good commit message.
+
+# Push the new version to the origin server.
+git push
+
+# Get back to what it is you were working on.
+git checkout feature/feature-name
+
+# If you need the fix in your current branch in order to move forward.
+git merge develop
+
+# Add back your work in progress.
+git stash pop
+```
+
+
+Text Editor
+------------------------
+Choose your favorite text editor. Some of highly regarded options include:
+
+ - Sublime Text 2
+ - Atom
+ - VIM
+
+### Sublime Text 2
+
+For Sublime Text 2 users, I'm including a nice starting point for your user-specific `Preferences.sublime-settings` file
+
+```
+/* 
+  Preferences.sublime-settings
+  Path: ~/Library/Application Support/Sublime Text 2/Packages/User/Preferences.sublime-settings
+*/
+{
+  "auto_complete_commit_on_tab": true,
+  "bold_folder_labels": true,
+  "color_scheme": "Packages/Color Scheme - Default/Monokai.tmTheme",
+  "default_encoding": "UTF-8",
+  "default_line_ending": "unix",
+  "detect_indentation": false,
+  "draw_minimap_border": true,
+  "draw_white_space": "all",
+  "ensure_newline_at_eof_on_save": true,
+  "file_exclude_patterns":
+  [
+    ".DS_Store",
+    "Desktop.ini",
+    "*.pyc",
+    "._*",
+    "Thumbs.db",
+    ".Spotlight-V100",
+    ".Trashes"
+  ],
+  "folder_exclude_patterns":
+  [
+    ".git"
+  ],
+  "font_size": 13,
+  "highlight_line": true,
+  "highlight_modified_tabs": true,
+  "hot_exit": false,
+  "ignored_packages":
+  [
+    "Vintage"
+  ],
+  "match_brackets": true,
+  "match_brackets_angle": true,
+  "open_files_in_new_window": false,
+  "remember_open_files": true,
+  "rulers":
+  [
+    120
+  ],
+  "save_on_focus_lost": true,
+  "shift_tab_unindent": true,
+  "show_encoding": true,
+  "show_line_endings": true,
+  "tab_size": 2,
+  "translate_tabs_to_spaces": true,
+  "trim_trailing_white_space_on_save": true,
+  "word_separators": "./\\()\"':,.;<>~!@#$%^&*|+=[]{}`~?",
+  "word_wrap": true,
+  "wrap_width": 120
+}
+
+```
 
 
 JavaScript
@@ -18,21 +239,14 @@ JavaScript
 - Use soft-tabs with a **two** space indent.
 - Be generous with well-written and clear comments.
 - Each line should be no longer than **120** characters.
-	- Using *Sublime Text 2*, you can enforce this rule visually with a vertical ruler at 120 characters by customing your **User Settings** file.
+  - Using *Sublime Text 2*, you can enforce this rule visually with a vertical ruler at 120 characters by customing your **User Settings** file. *(Shown above greater detail below in the `Sublime Text 2` section)*
 
-```
-/* Preferences.sublime-settings */
-{
-  ...other settings...
-  
-  "rulers": [120]
-}
-```
 
 ### Naming
 - For variables and functions, names should be limited to alphanumeric characters and, in some cases, the underscore character.
-	- Do **NOT** use: the dollar sign or backslack characters in any names.
+  - Do **NOT** use: the dollar sign ("$") in any names.
 - Variable names should be formatted in camel case.
+- The first word of a boolean variable name will be "is".
 - The first word of a variable name should be a noun (not a verb).
 
 ```
@@ -48,7 +262,7 @@ var getAccountNumber = "8401-1";
 ```
 
 - Function names shuld also be formatted using camel case.
-- The first word of a function should be a verb (not a noun)
+- The first word of a function should be a verb (not a noun).
 
 ```
 // Good
@@ -73,19 +287,28 @@ function car() {
 - When listing multiples variables in the same logical block, it is preferred that each variable be given its own line and properly indented (variable comment is to be used as needed).
 - Define all variables at the top of the function. JavaScript currently does not have block scope, so defining variables in blocks can confuse programmers who are experienced with other C family languages.
 - Use of global variables should be minimized. Implied global variables should never be used.
+- Never initialize a variable to `null` if it doesn't have an initial value. In this case you will **ONLY** declare the variable.
 
 ```
   // Good
-  var count   = 10,
-      name    = "Alex",
-      found   = false,
+  var store,
+      count = 10,
+      name  = "Alex",
+      found = false,
       empty;
 
+  // Good, also
+  var store;
+  var count = 10,
+  var name  = "Alex",
+  var found = false,
+  var empty;
+
   // Bad: Improper initialization alignment, Incorrect indentation
-  var count   =10,
-  name = "Alex",
-  found   = false,
-  empty;
+  var count       =10,
+      name = "Alex",
+      found  =    false,
+      empty;
 
   // Bad: Multiple var statements, Multiple declarations on one line
   var count = 10,
@@ -96,7 +319,7 @@ function car() {
 ### Function Declarations
 - All functions should be declared before they are used. Inner functions should immediately follow the `var` declarations. This helps make it clear what variables are included in its scope.
 - There should be no space between the name of a function and the left parenthesis of its parameter list.
-	- For anonymous functions, there should be no space between the `function` keyword and the parentheses.
+  - For anonymous functions, there should be no space between the `function` keyword and the parentheses.
 - There should be one space between the right parenthesis and the left curly brace that begins the statement body.
 - The body itself is indented two spaces and the closing right curly brace is aligned with the line containing the beginning of the declaration of the function.
 - Use of global functions should be minimized.
@@ -138,6 +361,15 @@ var greeting = "Hello, my name \
 is Alex DiLiberto.";
 ```
 
+If you need a mutli-line string, use an ES6 Template Literal
+
+```
+// Good
+var num = 2;
+var multiLineString = `Yo! this string
+                       is on ${num} lines`
+```
+
 Numbers should be written as decimal integers, e-notation integers, hexadecimal integers, or floating-point decimals with at least one digit before and one digit after the decimal point. Do **NOT** use octal literals.
 
 ```
@@ -166,15 +398,11 @@ var num = 010;
 
 `null` should be used only in the following situations:
 
-1. To initialize a variable that may later be assigned
-2. To compare against an initialized variable that may or may not have an object value
-3. To pass into a function where an object is expected
-4. To return from a function where an object is expected
+1. To compare against an initialized variable that may or may not have an object value
+2. To pass into a function where an object is expected
+3. To return from a function where an object is expected
 
 ```
-// Good
-var person = null;
-
 // Good
 function getPerson() {
   if (condition) {
@@ -190,7 +418,7 @@ if (person != null) {
   doSomething();
 }
 
-// Bad: Testing to see if an arugment was passed
+// Bad: Testing to see if an argument was passed
 function doSomething(arg1, arg2, arg3, arg4) {
   if (arg4 != null) {
     doSomethingElse();
@@ -322,7 +550,7 @@ CSS
 }
 ```
 
-### Structure
+### File Structure
 In general, the CSS file organization should follow something like this:
 
 ```
@@ -388,7 +616,7 @@ div {
 
 ### Rules of Thumb
 - As a rule of thumb, do **NOT** nest further than 3 levels deep.
-	- If you find yourself going further, consider reorganizing your rules (specificity needed or the layout of the nesting).
+  - If you find yourself going further, consider reorganizing your rules (specificity needed or the layout of the nesting).
 - Unit-less line-height is preferred because it does not inherit a percentage value of its parent element, but instead is based on a multiplier of the font-size.
 - Long, comma-separated property values (such as collections of gradients or shadows) should be arranged across multiple lines.
 - Avoid using ID selectors.
@@ -414,12 +642,12 @@ selector4 {
 
 - Broad selectors allow us to be efficient, yet can have adverse consequences if not tested. Location-specific selectors can save us time, but will quickly lead to a cluttered stylesheet. Exercise your best judgement.
 - Always avoid "Magic Numbers".
-	- These are numbers that are used as quick fixes on a one-off basis.
-	- Just because if works for your one scenario, doesn't mean it will work for all examples and permutations.
+  - These are numbers that are used as quick fixes on a one-off basis.
+  - Just because if works for your one scenario, doesn't mean it will work for all examples and permutations.
 
 ```
-/* 
- Magic Number example. 
+/*
+ Magic Number example.
  AVOID this whenever possible!
 */
 .box {
@@ -428,9 +656,9 @@ selector4 {
 ```
 
 - Strive to only include selectors that include semantics.
-	- A `span` or `div` holds none.
-	- A `heading` has some.
-	- A class defined on an element has plenty.
+  - A `span` or `div` holds none.
+  - A `heading` has some.
+  - A class defined on an element has plenty.
 
 
 Resources
