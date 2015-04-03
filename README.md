@@ -56,46 +56,6 @@ You can see some of our customized, high-level guidelines at the following site:
   1. [JS Resources](#js-resources)
   1. [CSS Resources](#css-resources)
 
-
-  1. [Types](#types)
-  1. [References](#references)
-  1. [Objects](#objects)
-  1. [Arrays](#arrays)
-  1. [Destructuring](#destructuring)
-  1. [Strings](#strings)
-  1. [Functions](#functions)
-  1. [Arrow Functions](#arrow-functions)
-  1. [Constructors](#constructors)
-  1. [Modules](#modules)
-  1. [Iterators and Generators](#iterators-and-generators)
-  1. [Properties](#properties)
-  1. [Variables](#variables)
-  1. [Hoisting](#hoisting)
-  1. [Comparison Operators & Equality](#comparison-operators--equality)
-  1. [Blocks](#blocks)
-  1. [Comments](#comments)
-  1. [Whitespace](#whitespace)
-  1. [Commas](#commas)
-  1. [Semicolons](#semicolons)
-  1. [Type Casting & Coercion](#type-casting--coercion)
-  1. [Naming Conventions](#naming-conventions)
-  1. [Accessors](#accessors)
-  1. [Events](#events)
-  1. [Modules](#modules)
-  1. [jQuery](#jquery)
-  1. [ECMAScript 5 Compatibility](#ecmascript-5-compatibility)
-  1. [ECMAScript 6 Styles](#ecmascript-6-styles)
-  1. [Testing](#testing)
-  1. [Performance](#performance)
-  1. [Resources](#resources)
-  1. [In the Wild](#in-the-wild)
-  1. [Translation](#translation)
-  1. [The JavaScript Style Guide Guide](#the-javascript-style-guide-guide)
-  1. [Chat With Us About Javascript](#chat-with-us-about-javascript)
-  1. [Contributors](#contributors)
-  1. [License](#license)
-  
-  
 ## Ember JS
 
 ### Ember Conventions
@@ -111,7 +71,7 @@ Follow all project naming and structure onvenstions as outlined in [Ember CLI](h
 ## Git
 
 ### Creating feature branches
-```
+```bash
 # Start the feature
 git checkout -b feature/my-new-feature
 
@@ -155,7 +115,7 @@ This means that you should include:
 - Do not remove default populated contents from commit messages. For example, merge commits will by default say what branch it was and what conflicts occurred during the merge.
 
 ### Example Bug Workflow
-```
+```bash
 # Store your current working state in your feature branch
 git stash save "currently working on foo"
 
@@ -193,7 +153,7 @@ Choose your favorite text editor. Some good options include:
 ### Sublime Text
 For Sublime Text 2 users, I'm including a nice starting point for your user-specific `Preferences.sublime-settings` file:
 
-```
+```json
 /* 
   Preferences.sublime-settings
   Path: ~/Library/Application Support/Sublime Text 2/Packages/User/Preferences.sublime-settings
@@ -269,7 +229,7 @@ For Sublime Text 2 users, I'm including a nice starting point for your user-spec
 - The first word of a boolean variable name will be "is".
 - The first word of a variable name should be a noun (not a verb).
 
-```
+```javascript
 // Good
 var accountNumber = "8401-1";
 
@@ -284,7 +244,7 @@ var getAccountNumber = "8401-1";
 - Function names shuld also be formatted using camel case.
 - The first word of a function should be a verb (not a noun).
 
-```
+```javascript
 // Good
 function doSomething() {
   // code
@@ -304,7 +264,7 @@ function car() {
 ### Variable Declarations
 - Always use `const` to declare variables.
 
-```
+```javascript
 // Good
 const car = new Mustang();
 
@@ -315,7 +275,7 @@ car = new Mustang();
 - All variables should be declared before used.
 - Always use one `const` declaration per variable.
 
-```
+```javascript
   // Good
   const store;
   const count = 10;
@@ -329,7 +289,7 @@ car = new Mustang();
       name  = "Alex",
       found = false;
       empty;
-      
+
   // Bad: Improper initialization alignment, Incorrect indentation
   const count       =10;
   const name = "Alex";
@@ -346,7 +306,7 @@ car = new Mustang();
 - Group `const` declarations, then group `let` declarations
 - Never initialize a variable to `null` if it doesn't have an initial value. In this case you will **ONLY** declare the variable.
 
-```
+```javascript
   // Good
   const hogwarts = "Hogwarts School of Witchcraft and Wizardry";
   const Gryffindor = "Gryffindor";
@@ -372,7 +332,7 @@ car = new Mustang();
 
 - Do not use global variables. Implied global variables should also never be used.
 
-```
+```javascript
   // Bad: Improper initialization alignment, Incorrect indentation
   const count       =10;
   const name = "Alex";
@@ -393,7 +353,7 @@ car = new Mustang();
 - The body itself is indented two spaces and the closing right curly brace is aligned with the line containing the beginning of the declaration of the function.
 - When a function is to be invoked immediately, the entire invocation expression should be wrapped in parens so that it is clear that the value being produced is the result of the function and not the function itself.
 
-```
+```javascript
   // Good
   function outer(c, d) {
     var e = c * d;
@@ -419,7 +379,7 @@ car = new Mustang();
 
 - Immediately invoked function expression format
 
-```
+```javascript
   //Good
   (() => {
     console.log('Herp Derp');
@@ -428,7 +388,7 @@ car = new Mustang();
 
 - Never user `arguments`, instead use the rest syntax `...`
 
-```
+```javascript
   //Good
   function concatAll(...args) {
     return args.join('');
@@ -443,7 +403,7 @@ car = new Mustang();
 
 - Use the default parameter syntax rather than manipulating function arguments within the function body.
 
-```
+```javascript
   // Good
   function foo(opts = {}) {
     //...
@@ -460,7 +420,7 @@ car = new Mustang();
 - If the function body is small and will cleanly fit on one-line, the you may omit the brances and use the implicit return value.
 - Always use parentheses around the arguments (including single arguments) for readability
 
-```
+```javascript
   // Good
   [1,2,3].map((x) => {
     return x * x;
@@ -479,7 +439,7 @@ car = new Mustang();
 - Strings should appear on a single line. Don't use a slash to create a new line in a string.
 - If you need multi-line strings use the template literal format.
 
-```
+```javascript
   // Good
   const name = "Alex DiLiberto";
 
@@ -494,7 +454,7 @@ car = new Mustang();
 
 Numbers should be written as decimal integers, e-notation integers, hexadecimal integers, or floating-point decimals with at least one digit before and one digit after the decimal point. Do **NOT** use octal literals.
 
-```
+```javascript
 // Good
 let count = 10;
 
@@ -524,7 +484,7 @@ let num = 010;
   1. To pass into a function where an object is expected
   1. To return from a function where an object is expected
 
-```
+```javascript
 // Good
 function getPerson() {
   if (condition) {
@@ -550,7 +510,7 @@ function doSomething(arg1, arg2, arg3, arg4) {
 
 - Never use `undefined` as a literal. To test if a variable has been defined, use the `typeof` operator.
 
-```
+```javascript
 // Good
 if (typeof variable == "undefined") {
   doSomething();
@@ -566,7 +526,7 @@ if (variable == undefined) {
 - Operators with two operands must be preceded and followed by a single space to make the expression clear.
 - When parentheses are used, there should be no white space immediately after the opening paren or immediately before the closing paren.
 
-```
+```javascript
 // Good
 var found = (values[i] === item);
 
@@ -586,7 +546,7 @@ for ( i=0; i<count; i++) {
 - Each property-value pair should be indented one level with the first property appearing on the next line after the opening brace.
 - If the value is a function, it should wrap under the property name and should have a blank line both before and after the function.
 
-```
+```javascript
 // Good
 var object = {
   key1: value1,
@@ -628,7 +588,7 @@ Comments may be used to annotate pieces of code with additional information. The
 - A `return` statement with a value should not use parentheses unless they make the return value more obvious in some way.
 - The `if` class of statements should have the following form:
 
-```
+```javascript
 if (condition) {
   statements
 } else if (condition) {
@@ -648,7 +608,7 @@ if (condition) {
 - Use hex color codes with each letter capitalized `#123ABC` unless using `rgba()`.
 - Any `$variable` or `@mixin` that is used in more than one file should be put in `globals/`. Others should be put at the top of the file where they're used.
 
-```
+```scss
 /* Good coding style example! */
 .styleguide-format {
   border: 1px solid #0F0;
@@ -660,7 +620,7 @@ if (condition) {
 ### File Structure
 In general, the CSS file organization should follow something like this:
 
-```
+```bash
   css/
   ├── global/
   │   ├── components/
@@ -681,7 +641,7 @@ In general, the CSS file organization should follow something like this:
 ### CSS Naming
 Use ID and class names that are as short as possible but as long as necessary.
 
-```
+```scss
 .nav {
   /* Instead of .navigation */
 }
@@ -692,7 +652,7 @@ Use ID and class names that are as short as possible but as long as necessary.
 
 Do not concatenate words and abbreviations in selectors by any characters other than hyphens.
 
-```
+```scss
 .demo-image {
   /* Instead of .demoimage or .demo_image */
 }
@@ -700,21 +660,21 @@ Do not concatenate words and abbreviations in selectors by any characters other 
 
 ID names should be in lowerCamelCase (although, as mentioned above, this should be **AVOIDED** for CSS styling hooks)
 
-```
+```scss
 #pageContainer {
 }
 ```
 
 Class names should be in lowercase, with words separated by hyphens. (as mentioned above).
 
-```
+```scss
 .my-class-name {
 }
 ```
 
 HTML elements should be in all lowercase.
 
-```
+```scss
 body,
 div {
   /* Instead of BODY, DIV */
@@ -730,7 +690,7 @@ div {
 - Include a snippet of HTML in a CSS comment for situations where it would be useful for a developer to know exactly how a chunk of CSS applies to some HTML.
 - Comments that refer to selector blocks should be on a separate line immediately before the block to which they refer.
 
-```
+```scss
 /* Comment about this selector block. */
 selector {
   property: value; /* Comment about this property-value pair. */
@@ -739,7 +699,7 @@ selector {
 
 - Multiple selectors should each be on a single line, with no space after each comma.
 
-```
+```scss
 selector1,
 selector2,
 selector3,
@@ -752,7 +712,7 @@ selector4 {
   - These are numbers that are used as quick fixes on a one-off basis.
   - Just because if works for your one scenario, doesn't mean it will work for all examples and permutations.
 
-```
+```scss
 /*
  Magic Number example.
  AVOID this whenever possible!
