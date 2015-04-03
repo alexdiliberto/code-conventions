@@ -1,10 +1,11 @@
-Code Conventions
-======================
-*Last Updated: March 27, 2015 3:59 PM*
+# Alex's Code Conventions
+*Last Updated: April 3, 2015 7:28 PM*
 
-This document contains a very detailed outline of my most important JavaScript and CSS code conventions.
+## Forward
 
-When each member of our team is collaborating on a project, we are all likely developing separate pieces of code. Ideally, each of those separate pieces of code should uniformly look like they were produced by a single developer. There are many reasons behind this:
+This document contains a very detailed outline of my most important JavaScript and CSS code conventions in a [Style Guide](http://styleguides.io/) format.
+
+When each member of our team is collaborating on a project, we are all likely developing separate pieces of code. Ideally, each of those separate pieces of code should uniformly look and behave in such a way that they were produced by a single developer. There are many reasons behind this belief system:
 
 - Easier to read and quickly inspect
 - Uniform patterns allow others to quickly understand basic flow, meaning, and functionality
@@ -14,81 +15,102 @@ When each member of our team is collaborating on a project, we are all likely de
 You can see some of our customized, high-level guidelines at the following site: [jsCode.org](http://jscode.org/03c498)
 
 
+## Table of Contents
 
-File Structure / Name Conventions
-------------------------
-### Ember JS Project
-In general, the application file organization should align with the following structure:
+[Ember JS](#ember-js)
 
-```
-  my-project/
-  ├── app/
-  │   ├── components/
-  │   │   ├── j-input.js
-  │   │   ├── j-password-field.js
-  │   │   └── ...
-  │   ├── controllers/
-  │   │   ├── accounts/
-  │   │   │   └── summary.js
-  │   │   ├── application.js
-  │   │   ├── authenticated.js
-  │   │   └── ...
-  │   ├── helpers/
-  │   │   ├── date.js
-  │   │   └── ...
-  │   ├── initializers/
-  │   │   ├── liveperson.js
-  │   │   └── ...
-  │   ├── mixins/
-  │   │   ├── body-event-listener.js
-  │   │   └── ...
-  │   ├── models/
-  │   │   ├── account.js
-  │   │   ├── beneficiary.js
-  │   │   └── ...
-  │   ├── routes/
-  │   │   ├── account-dashboard.js
-  │   │   ├── application.js
-  │   │   ├── authenticated.js
-  │   │   ├── login.js
-  │   │   └── ...
-  │   ├── styles/
-  │   │   ├── app.scss
-  │   │   └── ...
-  │   ├── templates/
-  │   │   ├── components/
-  │   │   │   └── j-input.js
-  │   │   ├── accounts.hbs
-  │   │   ├── alerts.hbs
-  │   │   └── ...
-  │   ├── utils/
-  │   │   ├── constants.js
-  │   │   └── ...
-  │   ├── views/
-  │   │   ├── footer.js
-  │   │   ├── header.js
-  │   │   └── ...
-  │   ├── app.js
-  │   ├── index.html
-  │   ├── router.js
-  │   └── transitions.js
-  │
-  └── ...
+  1. [Ember Conventions](#ember-conventions)
+  
+[Git](#git)
+  
+  1. [Creating Feature Branches](#creating-feature-branches)
+  1. [Commit Contents](#commit-contents)
+  1. [Commit Messages](#commit-messages)
+  1. [Example Bug Workflow](#example-bug-workflow)
 
-```
+[Text Editor](#text-editor)
 
-- All route and templates names will be dasherized. (Names which are more than 1 word will be separated by the dash "-" character.)
+  1. [Sublime Text](#sublime-text)  
+  
+[Javascript](#javascript)
+
+  1. [JS Style](#js-style)
+  1. [JS Naming](#js-naming)
+  1. [Variable Declarations](#variable-declarations)
+  1. [Function Declarations](#function-declarations)
+  1. [Primitive Literals](#primitive-literals)
+  1. [Operator Spacing](#operator-spacing)
+  1. [Object Literals](#object-literals)
+  1. [Comment Annotations](#comment-annotations)
+  1. [JS Rules of Thumb](#js-rules-of-thumb)
+  
+[CSS](#css)
+
+  1. [CSS Style](#css-style)
+  1. [File Structure](#css-file-structure)
+  1. [CSS Naming](#css-naming)
+  1. [CSS Rules of Thumb](#css-rules-of-thumb)
+
+[Resources](#resources)
+
+  1. [JS Resources](#js-resources)
+  1. [CSS Resources](#css-resources)
+
+
+  1. [Types](#types)
+  1. [References](#references)
+  1. [Objects](#objects)
+  1. [Arrays](#arrays)
+  1. [Destructuring](#destructuring)
+  1. [Strings](#strings)
+  1. [Functions](#functions)
+  1. [Arrow Functions](#arrow-functions)
+  1. [Constructors](#constructors)
+  1. [Modules](#modules)
+  1. [Iterators and Generators](#iterators-and-generators)
+  1. [Properties](#properties)
+  1. [Variables](#variables)
+  1. [Hoisting](#hoisting)
+  1. [Comparison Operators & Equality](#comparison-operators--equality)
+  1. [Blocks](#blocks)
+  1. [Comments](#comments)
+  1. [Whitespace](#whitespace)
+  1. [Commas](#commas)
+  1. [Semicolons](#semicolons)
+  1. [Type Casting & Coercion](#type-casting--coercion)
+  1. [Naming Conventions](#naming-conventions)
+  1. [Accessors](#accessors)
+  1. [Events](#events)
+  1. [Modules](#modules)
+  1. [jQuery](#jquery)
+  1. [ECMAScript 5 Compatibility](#ecmascript-5-compatibility)
+  1. [ECMAScript 6 Styles](#ecmascript-6-styles)
+  1. [Testing](#testing)
+  1. [Performance](#performance)
+  1. [Resources](#resources)
+  1. [In the Wild](#in-the-wild)
+  1. [Translation](#translation)
+  1. [The JavaScript Style Guide Guide](#the-javascript-style-guide-guide)
+  1. [Chat With Us About Javascript](#chat-with-us-about-javascript)
+  1. [Contributors](#contributors)
+  1. [License](#license)
+  
+  
+## Ember JS
+
+### Ember Conventions
+Follow all project naming and structure onvenstions as outlined in [Ember CLI](http://www.ember-cli.com/).
+
+- All route and template names will be dasherized. (Names which are more than 1 word will be separated by the dash "-" character.)
 - All *resources* will be in the top-level `templates/` directory.
 - All *routes* will be pulled from `templates/` sub-directories matching their parent resource.
 - All components will be placed in `templates/components/`
 - All names corresponding to the same route will be the identical and will be placed into the appropriate directories. (controllers/, routes/, views/, templates/, etc.)
 
 
-Git
-------------------------
+## Git
+
 ### Creating feature branches
-
-
 ```
 # Start the feature
 git checkout -b feature/my-new-feature
@@ -118,7 +140,7 @@ git push origin :feature/my-new-feature
 
 ### Commit Contents
 - Every commit should be constrained to a single piece of functionality and its dependencies. (Atomicity)
-- Try to find good points in the development process to pause and commit pieces of your effort–a good rule of thumb is that any time you feel pleased that you're making progress you should commit your changes.
+- Find good points in the development process to pause and commit pieces of your effort – a good rule of thumb is that any time you feel pleased that you're making progress you should commit your changes.
 - Don't make changes to unrelated functionality inside of a single commit.
 - If you encounter a bug when developing a new feature or another issue that needs to be addressed you can follow the example below.
 
@@ -127,13 +149,12 @@ Write [good commit messages](http://robots.thoughtbot.com/post/48933156625/5-use
 
 This means that you should include:
 
-- What types of functionality you worked on (eg. JS, CSS, HBS). This doesn't have to be explicit, "update the login route event handler" would work to identify that you worked on JS.
+- What types of functionality you worked on (JS, CSS, HBS). This doesn't have to be explicit, "update the login route event handler" would work to identify that you worked on JS.
 - Explanations of why you used that particular approach to solve the problem, if necessary.
 - A brief description of next steps if there is additional work that needs to be done.
 - Do not remove default populated contents from commit messages. For example, merge commits will by default say what branch it was and what conflicts occurred during the merge.
 
 ### Example Bug Workflow
-
 ```
 # Store your current working state in your feature branch
 git stash save "currently working on foo"
@@ -161,17 +182,16 @@ git stash pop
 ```
 
 
-Text Editor
-------------------------
-Choose your favorite text editor. Some of highly regarded options include:
+## Text Editor
 
- - Sublime Text 2
- - Atom
- - VIM
+Choose your favorite text editor. Some good options include:
 
-### Sublime Text 2
+ - [Sublime Text](https://www.sublimetext.com/)
+ - [Atom](https://atom.io/)
+ - [VIM](http://www.vim.org/)
 
-For Sublime Text 2 users, I'm including a nice starting point for your user-specific `Preferences.sublime-settings` file
+### Sublime Text
+For Sublime Text 2 users, I'm including a nice starting point for your user-specific `Preferences.sublime-settings` file:
 
 ```
 /* 
@@ -233,16 +253,16 @@ For Sublime Text 2 users, I'm including a nice starting point for your user-spec
 ```
 
 
-JavaScript
-------------------------
-### Style
-- Use soft-tabs with a **two** space indent.
+## JavaScript
+
+### JS Style
+- Use soft-tabs with a **2** space indent.
 - Be generous with well-written and clear comments.
 - Each line should be no longer than **120** characters.
   - Using *Sublime Text 2*, you can enforce this rule visually with a vertical ruler at 120 characters by customing your **User Settings** file. *(Shown above greater detail below in the `Sublime Text 2` section)*
 
 
-### Naming
+### JS Naming
 - For variables and functions, names should be limited to alphanumeric characters and, in some cases, the underscore character.
   - Do **NOT** use: the dollar sign ("$") in any names.
 - Variable names should be formatted in camel case.
@@ -282,47 +302,95 @@ function car() {
 ```
 
 ### Variable Declarations
+- Always use `const` to declare variables.
+
+```
+// Good
+const car = new Mustang();
+
+// Bad: Glabal variable
+car = new Mustang();
+```
+
 - All variables should be declared before used.
-- The `var` statements should be the first statements in the function body.
-- When listing multiples variables in the same logical block, it is preferred that each variable be given its own line and properly indented (variable comment is to be used as needed).
-- Define all variables at the top of the function. JavaScript currently does not have block scope, so defining variables in blocks can confuse programmers who are experienced with other C family languages.
-- Use of global variables should be minimized. Implied global variables should never be used.
+- Always use one `const` declaration per variable.
+
+```
+  // Good
+  const store;
+  const count = 10;
+  const name  = "Alex";
+  const found = false;
+  const empty;
+
+  // Bad: One `const` for multiple variables (much harder to spot global variable errors)
+  const store,
+      count = 10,
+      name  = "Alex",
+      found = false;
+      empty;
+      
+  // Bad: Improper initialization alignment, Incorrect indentation
+  const count       =10;
+  const name = "Alex";
+  const found  =    false;
+  const empty;
+
+  // Bad: Multiple declarations on one line
+  const count = 10;
+  const name  = "Alex";
+  const found = false, empty;
+```
+
+- Keep variable declarations as the first statements of a function's body.
+- Group `const` declarations, then group `let` declarations
 - Never initialize a variable to `null` if it doesn't have an initial value. In this case you will **ONLY** declare the variable.
 
 ```
   // Good
-  var store,
-      count = 10,
-      name  = "Alex",
-      found = false,
-      empty;
+  const hogwarts = "Hogwarts School of Witchcraft and Wizardry";
+  const Gryffindor = "Gryffindor";
+  const Slytherin = "Slytherin";
+  let quidditchMatchTime = new Date();
+  let i;
+  let length;
+  
+  // Bad: Improper Alignment. Multiple variables declared per line.
+  const hogwarts = "Hogwarts School of Witchcraft and Wizardry", Gryffindor = "Gryffindor", Slytherin = "Slytherin";
+  let quidditchMatchTime = new Date(),
+    i;
+  let length;
+  
+  // Bad: Not using `const` when appropriate. Initialized variables to `null`.
+  let hogwarts = "Hogwarts School of Witchcraft and Wizardry";
+  let Gryffindor = "Gryffindor";
+  let Slytherin = "Slytherin";
+  let quidditchMatchTime = new Date();
+  let i = null;
+  let length = null;
+```
 
-  // Good, also
-  var store;
-  var count = 10,
-  var name  = "Alex",
-  var found = false,
-  var empty;
+- Do not use global variables. Implied global variables should also never be used.
 
+```
   // Bad: Improper initialization alignment, Incorrect indentation
-  var count       =10,
-      name = "Alex",
-      found  =    false,
-      empty;
+  const count       =10;
+  const name = "Alex";
+  const found  =    false;
+  const empty;
 
   // Bad: Multiple var statements, Multiple declarations on one line
-  var count = 10,
-      name  = "Alex";
-  var found = false, empty;
+  const count = 10;
+  const name  = "Alex";
+  const found = false, empty;
 ```
 
 ### Function Declarations
-- All functions should be declared before they are used. Inner functions should immediately follow the `var` declarations. This helps make it clear what variables are included in its scope.
+- All functions should be declared before they are used to avoid hoisting confusion.
 - There should be no space between the name of a function and the left parenthesis of its parameter list.
   - For anonymous functions, there should be no space between the `function` keyword and the parentheses.
 - There should be one space between the right parenthesis and the left curly brace that begins the statement body.
 - The body itself is indented two spaces and the closing right curly brace is aligned with the line containing the beginning of the declaration of the function.
-- Use of global functions should be minimized.
 - When a function is to be invoked immediately, the entire invocation expression should be wrapped in parens so that it is clear that the value being produced is the result of the function and not the function itself.
 
 ```
@@ -349,58 +417,112 @@ function car() {
   }
 ```
 
+- Immediately invoked function expression format
+
+```
+  //Good
+  (() => {
+    console.log('Herp Derp');
+  })();
+```
+
+- Never user `arguments`, instead use the rest syntax `...`
+
+```
+  //Good
+  function concatAll(...args) {
+    return args.join('');
+  }
+  
+  //Bad: `arguments` is not explicit and not an actual JS `Array`
+  function concatAll() {
+    const args = [].slice.call(arguments);
+    return args.join('');
+  }
+```
+
+- Use the default parameter syntax rather than manipulating function arguments within the function body.
+
+```
+  // Good
+  function foo(opts = {}) {
+    //...
+  }
+  
+  // Bad: Mutating function arguments in the body.
+  function foo(opts) {
+    opts = opts || {};
+    //...
+  }
+```
+
+- Use arrow functions notation in place of a normally used anonymous function. Arrow functions will execute with the correct context of `this`.
+- If the function body is small and will cleanly fit on one-line, the you may omit the brances and use the implicit return value.
+- Always use parentheses around the arguments (including single arguments) for readability
+
+```
+  // Good
+  [1,2,3].map((x) => {
+    return x * x;
+  });
+  
+  // Even Better
+  [1,2,3].map((x) => x * x);
+  
+  // Bad
+  [1,2,3].map(function(number) {
+    return number * number;
+  });
+```
+
 ### Primitive Literals
-Strings should appear on a single line. Don't use a slash to create a new line in a string.
+- Strings should appear on a single line. Don't use a slash to create a new line in a string.
+- If you need multi-line strings use the template literal format.
 
 ```
-// Good
-var name = "Alex DiLiberto";
+  // Good
+  const name = "Alex DiLiberto";
 
-// Bad
-var greeting = "Hello, my name \
-is Alex DiLiberto.";
-```
+  // Good
+  const greeting = `Hello, my name
+  is ${name}`;
 
-If you need a mutli-line string, use an ES6 Template Literal
-
-```
-// Good
-var num = 2;
-var multiLineString = `Yo! this string
-                       is on ${num} lines`
+  // Bad
+  const greeting = "Hello, my name \
+  is Alex DiLiberto.";
 ```
 
 Numbers should be written as decimal integers, e-notation integers, hexadecimal integers, or floating-point decimals with at least one digit before and one digit after the decimal point. Do **NOT** use octal literals.
 
 ```
 // Good
-var count = 10;
+let count = 10;
 
 // Good
-var price = 10.0;
-var price = 10.00;
+let price = 10.0;
+let price = 10.00;
 
 // Good
-var num = 0xA2;
+let num = 0xA2;
 
 // Good
-var num = 1e23;
+let num = 1e23;
 
 // Bad: Hanging decimal point
-var price = 10.;
+let price = 10.;
 
 // Bad: Leading decimal point
-var price = .1;
+let price = .1;
 
 // Bad: Octal (base 8) is deprecated
-var num = 010;
+let num = 010;
 ```
 
-`null` should be used only in the following situations:
+- `null` should be used only in the following situations:
 
-1. To compare against an initialized variable that may or may not have an object value
-2. To pass into a function where an object is expected
-3. To return from a function where an object is expected
+  1. To compare against an initialized variable that may or may not have an object value
+  1. To pass into a function where an object is expected
+  1. To return from a function where an object is expected
 
 ```
 // Good
@@ -413,7 +535,7 @@ function getPerson() {
 }
 
 // Bad: Testing against an uninitialized variable
-var person;
+let person;
 if (person != null) {
   doSomething();
 }
@@ -426,7 +548,7 @@ function doSomething(arg1, arg2, arg3, arg4) {
 }
 ```
 
-Never use `undefined` as a literal. To test if a variable has been defined, use the `typeof` operator.
+- Never use `undefined` as a literal. To test if a variable has been defined, use the `typeof` operator.
 
 ```
 // Good
@@ -440,7 +562,7 @@ if (variable == undefined) {
 }
 ```
 
-### Operator/Parentheses Spacing
+### Operator Spacing
 - Operators with two operands must be preceded and followed by a single space to make the expression clear.
 - When parentheses are used, there should be no white space immediately after the opening paren or immediately before the closing paren.
 
@@ -516,25 +638,10 @@ if (condition) {
 }
 ```
 
-- Variables should not be declared in the initialization section of a `for` statement.
-- The `for` class of statements should have the following form:
 
-```
-var i,
-    len;
-for (init; condition; update) {
-  statements
-}
+## CSS
 
-for (variable in object) {
-  statements
-}
-```
-
-
-CSS
-------------------------
-### Style
+### CSS Style
 - Use soft-tabs with a **two** space indent.
 - Put spaces after `:` in property declarations.
 - Put spaces before `{` in rule declarations.
@@ -571,7 +678,7 @@ In general, the CSS file organization should follow something like this:
       └── _media-queries.scss
 ```
 
-### Naming
+### CSS Naming
 Use ID and class names that are as short as possible but as long as necessary.
 
 ```
@@ -614,7 +721,7 @@ div {
 }
 ```
 
-### Rules of Thumb
+### CSS Rules of Thumb
 - As a rule of thumb, do **NOT** nest further than 3 levels deep.
   - If you find yourself going further, consider reorganizing your rules (specificity needed or the layout of the nesting).
 - Unit-less line-height is preferred because it does not inherit a percentage value of its parent element, but instead is based on a multiplier of the font-size.
@@ -661,18 +768,19 @@ selector4 {
   - A class defined on an element has plenty.
 
 
-Resources
-------------------------
-### Javascript
-1. *Maintainable Javascript* by Nicholas C. Zakas
-2. [Code Conventions for the JavaScript Programming Language](http://javascript.crockford.com/code.html) by Douglas Crockford
+## Resources
 
-### CSS
+### JS Resources
+1. *Maintainable Javascript* by Nicholas C. Zakas
+1. [Code Conventions for the JavaScript Programming Language](http://javascript.crockford.com/code.html) by Douglas Crockford
+1. [AirBnB Javascript Styleguide](https://github.com/airbnb/javascript)
+
+### CSS Resources
 1. [GitHub CSS Styleguide](https://github.com/styleguide/css)
-2. [Google HTML/CSS Style Guide](http://google-styleguide.googlecode.com/svn/trunk/htmlcssguide.xml)
-3. [Principles of writing consistent, idiomatic CSS](https://github.com/necolas/idiomatic-css) by Nicolas Gallagher
-4. [My HTML/CSS coding style](http://csswizardry.com/2012/04/my-html-css-coding-style/) by Harry Roberts
-5. [Improving Code Readability With CSS Styleguides](http://coding.smashingmagazine.com/2008/05/02/improving-code-readability-with-css-styleguides/) by Vitaly Friedman
-6. [ThinkUp Code Style Guide: CSS](https://github.com/ginatrapani/ThinkUp/wiki/Code-Style-Guide:-CSS) by Gina Trapani
-7. [Wordpress CSS Coding Standards Handbook](http://make.wordpress.org/core/handbook/coding-standards/css/)
-8. [CSS Style Guides](http://css-tricks.com/css-style-guides/) by Chris Coyier
+1. [Google HTML/CSS Style Guide](http://google-styleguide.googlecode.com/svn/trunk/htmlcssguide.xml)
+1. [Principles of writing consistent, idiomatic CSS](https://github.com/necolas/idiomatic-css) by Nicolas Gallagher
+1. [My HTML/CSS coding style](http://csswizardry.com/2012/04/my-html-css-coding-style/) by Harry Roberts
+1. [Improving Code Readability With CSS Styleguides](http://coding.smashingmagazine.com/2008/05/02/improving-code-readability-with-css-styleguides/) by Vitaly Friedman
+1. [ThinkUp Code Style Guide: CSS](https://github.com/ginatrapani/ThinkUp/wiki/Code-Style-Guide:-CSS) by Gina Trapani
+1. [Wordpress CSS Coding Standards Handbook](http://make.wordpress.org/core/handbook/coding-standards/css/)
+1. [CSS Style Guides](http://css-tricks.com/css-style-guides/) by Chris Coyier
