@@ -1,5 +1,5 @@
 # Alex's Code Conventions
-*Last Updated: April 3, 2015 7:28 PM*
+*Last Updated: April 3, 2015 7:36 PM*
 
 ## Forward
 
@@ -231,14 +231,14 @@ For Sublime Text 2 users, I'm including a nice starting point for your user-spec
 
 ```javascript
 // Good
-var accountNumber = "8401-1";
+const accountNumber = "8401-1";
 
 // Bad: Not camel case
-var AccountNumber = "8401-1";
-var account_number = "8401-1";
+const AccountNumber = "8401-1";
+const account_number = "8401-1";
 
 // Bad: Begins with a verb
-var getAccountNumber = "8401-1";
+const getAccountNumber = "8401-1";
 ```
 
 - Function names shuld also be formatted using camel case.
@@ -356,7 +356,7 @@ car = new Mustang();
 ```javascript
   // Good
   function outer(c, d) {
-    var e = c * d;
+    const e = c * d;
 
     function inner(a, b) {
       return (e * a) + b;
@@ -528,7 +528,7 @@ if (variable == undefined) {
 
 ```javascript
 // Good
-var found = (values[i] === item);
+const found = (values[i] === item);
 
 // Good
 if (found && (count > 10)) {
@@ -548,7 +548,7 @@ for ( i=0; i<count; i++) {
 
 ```javascript
 // Good
-var object = {
+let object = {
   key1: value1,
   key2: value2,
 
@@ -560,7 +560,7 @@ var object = {
 };
 
 // Bad: Improper indenation, Missing blank lines around function
-var object = {
+let object = {
                key1: value1,
                key2: value2,
                func: function() {
