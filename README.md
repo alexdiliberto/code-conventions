@@ -52,6 +52,12 @@ You can see some of our customized, high-level guidelines at the following site:
   1. [CSS Naming](#css-naming)
   1. [CSS Rules of Thumb](#css-rules-of-thumb)
 
+[HTML](#html)
+
+  1. [Indentation and Line Breaks](#indentation-and-line-breaks)
+  1. [Escaping Characters](#escaping-characters)
+  1. [Smart Quotes](#smart-quotes)
+
 [Resources](#resources)
 
   1. [JS Resources](#js-resources)
@@ -732,6 +738,43 @@ selector4 {
   - A `span` or `div` holds none.
   - A `heading` has some.
   - A class defined on an element has plenty.
+
+
+## HTML
+
+###Indentation and Line Breaks
+Break to a new line if the tag contains another element.
+
+```html
+  <!-- Good -->
+  <p>
+    This is a
+    <a href="#">link</a>.
+  </p>
+
+  <!-- Bad: All tags are grouped on a single line -->
+  <p>This is a <a href="#">link</a>.</p>
+```
+
+In the above Good example note the period needs to be right after the anchor tag here because we do not want an extra space when the browser renders the HTML.
+
+This also makes sense:
+
+<h2>June 16<sup>th</sup></h2>
+because there shouldn’t be a space or possibility of line break between the date and its ordinal indicator.
+
+###Escaping Characters
+Escape the following characters with HTML entity encoding to prevent context switching into any execution context, such as script, style, or event handlers.
+
+ & --> &amp;
+ < --> &lt;
+ > --> &gt;
+ " --> &quot;
+ ' --> &#x27;
+ / --> &#x2F;
+
+###Smart Quotes
+Use [Smart Quotes](http://smartquotesforsmartpeople.com/) when appropriate.
 
 
 ## Resources
