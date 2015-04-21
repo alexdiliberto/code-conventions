@@ -161,8 +161,7 @@ Do not use the prototype extension syntax as Ember is moving away from this conv
 
 ### Templates
  * Do not use partials. Always use components instead. Parials share scope with the parent view and components will provide a consistent scope.
-
-Use block syntax 
+ * Use block syntax 
 
 ```handlebars
   {{! Good }}
