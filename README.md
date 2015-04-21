@@ -1,5 +1,5 @@
 # Alex's Code Conventions
-*Last Updated: April 3, 2015 7:36 PM*
+*Last Updated: April 21, 2015 2:06 PM*
 
 ## Forward
 
@@ -20,9 +20,9 @@ You can see some of our customized, high-level guidelines at the following site:
 [Ember JS](#ember-js)
 
   1. [Ember Conventions](#ember-conventions)
-  
+
 [Git](#git)
-  
+
   1. [Creating Feature Branches](#creating-feature-branches)
   1. [Commit Contents](#commit-contents)
   1. [Commit Messages](#commit-messages)
@@ -30,8 +30,9 @@ You can see some of our customized, high-level guidelines at the following site:
 
 [Text Editor](#text-editor)
 
-  1. [Sublime Text](#sublime-text)  
-  
+  1. [VIM](#vim)
+  1. [Sublime Text](#sublime-text)
+
 [Javascript](#javascript)
 
   1. [JS Style](#js-style)
