@@ -150,11 +150,16 @@ Choose your favorite text editor. Some good options include:
  - [Atom](https://atom.io/)
  - [VIM](http://www.vim.org/)
 
+### VIM
+For VIM users, the following is a great resource:
+
+[Vim Adventures](http://vim-adventures.com/)
+
 ### Sublime Text
 For Sublime Text 2 users, I'm including a nice starting point for your user-specific `Preferences.sublime-settings` file:
 
 ```json
-/* 
+/*
   Preferences.sublime-settings
   Path: ~/Library/Application Support/Sublime Text 2/Packages/User/Preferences.sublime-settings
 */
