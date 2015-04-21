@@ -20,6 +20,10 @@ You can see some of our customized, high-level guidelines at the following site:
 [Ember JS](#ember-js)
 
   1. [Ember Conventions](#ember-conventions)
+  1. [Local Variables and Prototype Extensions](#local-variables-and-prototype-extensions)
+  1. [Organizing Modules](#organizing-modules)
+  1. [Controllers](#controllers)
+  1. [Templates](#templates)
 
 [Git](#git)
 
@@ -44,7 +48,7 @@ You can see some of our customized, high-level guidelines at the following site:
   1. [Object Literals](#object-literals)
   1. [Comment Annotations](#comment-annotations)
   1. [JS Rules of Thumb](#js-rules-of-thumb)
-  
+
 [CSS](#css)
 
   1. [CSS Style](#css-style)
@@ -73,6 +77,118 @@ Follow all project naming and structure onvenstions as outlined in [Ember CLI](h
 - All *routes* will be pulled from `templates/` sub-directories matching their parent resource.
 - All components will be placed in `templates/components/`
 - All names corresponding to the same route will be the identical and will be placed into the appropriate directories. (controllers/, routes/, views/, templates/, etc.)
+
+### Local Variables and Prototype Extensions
+Do not use the prototype extension syntax as Ember is moving away from this convention. Create local variables from the Ember namespace.
+
+```javascript
+  // Good
+  const {
+    Component,
+    computed,
+    on
+  } = Ember; // Shorthand ES6 Destructuring Syntax
+  const alias = computed.alias;
+
+  export default Component.extend({
+    first: alias('firstName'),
+    last: alias('lastName'),
+
+    fullName: computed('first', 'last', () => {
+      /* Code */
+    }),
+
+    sayHello: on('didInsertElement', () => {
+      /* Code */
+    })
+  });
+
+  // Bad - Using prototype extensions. No local variables.
+  export default Ember.Component.extend({
+    first: Ember.computed.alias('firstName'),
+    last: Ember.computed.alias('lastName'),
+
+    fullName: function() {
+      /* Code */
+    }).property('first', 'last'),
+
+    sayHello: function() {
+      /* Code */
+    }).on('didInsertElement')
+  });
+```
+
+### Organizing Modules
+ * Define your object's default values first.
+ * Define single line computed properties second
+ * Define multi-line computed properties third
+ * Define actions last. This provides a common place where actions can be found in each module.
+ * [Don't override init](http://reefpoints.dockyard.com/2014/04/28/dont-override-init.html). Unless you want to change an object's `init` function, perform actions by hooking into the object's `init` hook via `on`. This prevents you from forgetting to call `_super`.
+
+```javascript
+  //Good
+  export default Ember.Component.extend({
+    // Defaults
+    tagName: 'span',
+
+    // Single line Computed Properties
+    post: alias('myPost'),
+
+    // Multi-line Computed Properties
+    authorName: computed('author.firstName', 'author.lastName', function() {
+      /* Code */
+    }),
+
+    actions: {
+      someAction: function() {
+        /* Code */
+      }
+    }
+  });
+```
+
+### Controllers
+ * Define query params first. These should be listed above default values.
+ * Do not use `ObjectController` or `ArrayController`, simply use `Controller`.
+ * Alias your model. It provides a cleaner code, it is more maintainable, and will align well with future routable components within Ember.
+
+```javascript
+  // Good
+  export default Controller.extend({
+    user: alias('model')
+  });
+```
+
+### Templates
+ * Do not use partials. Always use components instead. Parials share scope with the parent view and components will provide a consistent scope.
+
+Use block syntax 
+
+```handlebars
+  {{! Good }}
+  {{#each posts as |post|}}
+
+  {{! Bad - Using old non-block syntax}}
+  {{#each post in posts}}
+```
+
+ * Use components in {{#each}} blocks. Contents of your each blocks should ideally be a single line. This will allow you to test the contents in isolation via unit tests, as your loop will likely contain more complex logic in this case.
+
+```handlebars
+  {{! Good }}
+  {{#each posts as |post|}}
+    {{post-summary post=post}}
+  {{/each}}
+
+  {{! Bad }}
+  {{#each posts as |post|}}
+    <article>
+      <img src={{post.image}} />
+      <h1>{{post.title}}</h2>
+      <p>{{post.summar}}</p>
+    </article>
+  {{/each}}
+```
 
 
 ## Git
