@@ -1,5 +1,5 @@
 # Alex's Code Conventions
-*Last Updated: April 21, 2015 2:06 PM*
+*Last Updated: June 12, 2015 8:19 PM*
 
 ## Forward
 
@@ -94,11 +94,11 @@ Do not use the prototype extension syntax as Ember is moving away from this conv
     first: alias('firstName'),
     last: alias('lastName'),
 
-    fullName: computed('first', 'last', () => {
+    fullName: computed('first', 'last', function() {
       /* Code */
     }),
 
-    sayHello: on('didInsertElement', () => {
+    sayHello: on('didInsertElement', function() {
       /* Code */
     })
   });
@@ -120,8 +120,8 @@ Do not use the prototype extension syntax as Ember is moving away from this conv
 
 ### Organizing Modules
  * Define your object's default values first.
- * Define single line computed properties second
- * Define multi-line computed properties third
+ * Define single line computed properties second.
+ * Define multi-line computed properties third.
  * Define actions last. This provides a common place where actions can be found in each module.
  * [Don't override init](http://reefpoints.dockyard.com/2014/04/28/dont-override-init.html). Unless you want to change an object's `init` function, perform actions by hooking into the object's `init` hook via `on`. This prevents you from forgetting to call `_super`.
 
@@ -171,7 +171,7 @@ Do not use the prototype extension syntax as Ember is moving away from this conv
   {{#each post in posts}}
 ```
 
- * Use components in {{#each}} blocks. Contents of your each blocks should ideally be a single line. This will allow you to test the contents in isolation via unit tests, as your loop will likely contain more complex logic in this case.
+ * Use components in `{{#each}}` blocks. Contents of your each blocks should ideally be a single line. This will allow you to test the contents in isolation via unit tests, as your loop will likely contain more complex logic in this case.
 
 ```handlebars
   {{! Good }}
