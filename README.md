@@ -1,5 +1,5 @@
 # Alex's Code Conventions
-*Last Updated: June 12, 2015 8:19 PM*
+*Last Updated: July 14, 2015 2:33 PM*
 
 ## Forward
 
@@ -82,13 +82,13 @@ Follow all project naming and structure onvenstions as outlined in [Ember CLI](h
 Do not use the prototype extension syntax as Ember is moving away from this convention. Create local variables from the Ember namespace.
 
 ```javascript
-  // Good
+  // Good - Distilling each "module" from Ember down to its lowest level
   const {
     Component,
     computed,
     on
   } = Ember; // Shorthand ES6 Destructuring Syntax
-  const alias = computed.alias;
+  const { alias } = computed;
 
   export default Component.extend({
     first: alias('firstName'),
