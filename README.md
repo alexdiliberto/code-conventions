@@ -1,5 +1,5 @@
 # Alex's Code Conventions
-*Last Updated: July 14, 2015 2:33 PM*
+*Last Updated: September 26, 2015 1:02 PM*
 
 ## Forward
 
@@ -389,7 +389,7 @@ function car() {
 ```
 
 ### Variable Declarations
-- Always use `const` to declare variables.
+- Never use `var`. Prefer [`let`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let) to declare a block scope local variable. Use [`const`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/const) to declare a constant whose value can not be re-assigned in the given scope (global or local).
 
 ```javascript
 // Good
@@ -466,7 +466,7 @@ car = new Mustang();
   const found  =    false;
   const empty;
 
-  // Bad: Multiple var statements, Multiple declarations on one line
+  // Bad: Multiple variable statements, Multiple declarations on one line
   const count = 10;
   const name  = "Alex";
   const found = false, empty;
