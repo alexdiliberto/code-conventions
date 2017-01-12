@@ -1,5 +1,5 @@
 # Alex's Code Conventions
-*Last Updated: January 12, 2017 01:33 PM*
+*Last Updated: January 12, 2017 01:44 PM*
 
 ## Forward
 
@@ -25,6 +25,7 @@ You can see some of our customized, high-level guidelines at the following site:
   1. [Controllers](#controllers)
   1. [Templates](#templates)
   1. [Routing](#routing)
+  1. [General](#general)
   
 [Git](#git)
 
@@ -293,6 +294,75 @@ How to organize the Javascript code within a single file/module:
 
   // Bad
   this.route('foo', { path: ':fooId' });
+```
+
+### General
+ * Never use jQuery without the Ember Run Loop. Using plain jQuery invokes actions out of the Ember Run Loop. In order to have a control on all operations in Ember it's good practice to trigger actions in run loop.
+
+```javascript
+  // GOOD
+  Ember.$('#something-rendered-by-jquery-plugin').on(
+    'click',
+    Ember.run.bind(this, this._handlerActionFromController)
+  );
+
+  // BAD
+  Ember.$('#something-rendered-by-jquery-plugin').on('click', () => {
+    this._handlerActionFromController();
+  });
+```
+
+ * Never use observers. Usage of observers is very easy BUT it leads to hard to reason about consequences. Unless observers are necessary, it's better to avoid them. See the following video for more information: [Observer Tip Jar by Stef Penner](https://www.youtube.com/watch?v=7PUX27RKCq0)
+
+```javascript
+{{input value=text key-up="change"}}
+
+// GOOD
+export default Controller.extend({
+  actions: {
+    change() {
+      console.log(`change detected: ${this.get('text')}`);
+    },
+  },
+});
+
+// BAD
+export default Model.extend({
+  change: Ember.observer('text', function() {
+    console.log(`change detected: ${this.get('text')}`);
+  },
+});
+```
+
+ * Don't introduce side-effects in computed properties. When using computed properties do not introduce side effects. It will make reasoning about the origin of the change much harder.
+
+```javascript
+import Ember from 'ember';
+
+const {
+  Component,
+  computed: { filterBy, alias },
+} = Ember;
+
+export default Component.extend({
+  users: [
+    { name: 'Foo', age: 15 },
+    { name: 'Bar', age: 16 },
+    { name: 'Baz', age: 15 }
+  ],
+
+  // GOOD:
+  fifteen: filterBy('users', 'age', 15),
+  fifteenAmount: alias('fifteen.length'),
+
+  // BAD:
+  fifteenAmount: 0,
+  fifteen: computed('users', function() {
+    const fifteen = this.get('users').filterBy('items', 'age', 15);
+    this.set('fifteenAmount', fifteen.length); // SIDE EFFECT!
+    return fifteen;
+  })
+});
 ```
 
 
