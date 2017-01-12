@@ -24,7 +24,8 @@ You can see some of our customized, high-level guidelines at the following site:
   1. [Organizing Modules](#organizing-modules)
   1. [Controllers](#controllers)
   1. [Templates](#templates)
-
+  1. [Routing](#routing)
+  
 [Git](#git)
 
   1. [Creating Feature Branches](#creating-feature-branches)
@@ -158,24 +159,33 @@ Do not use the prototype extension syntax as Ember is moving away from this conv
   });
 ```
 
-### Organizing Modules
- * Define your object's default values first.
- * Define single line computed properties second.
- * Define multi-line computed properties third.
- * Define actions last. This provides a common place where actions can be found in each module.
- * [Don't override init](http://reefpoints.dockyard.com/2014/04/28/dont-override-init.html). Unless you want to change an object's `init` function, perform actions by hooking into the object's `init` hook via `on`. This prevents you from forgetting to call `_super`.
+### Use `Ember.get` / `Ember.set` over `<instance>.get` / `<instance>.set`
+For a safer accessor, use `Ember.set(foo, 'bar', 'baz')` and `Ember.get(foo, 'bar')` instead of `foo.set('bar', 'baz')` or `foo.get('bar')`. See the [following response by Ember core team member Stef Penner](https://www.reddit.com/r/emberjs/comments/3mr5as/question_why_use_embergetthis_prop_instead_of/cvhkaka) for more information.
 
+### Organizing Modules
+How to organize the Javascript code within a single file/module:
+ * First, Define your object's default values.
+ * Second, Define required attributes you expect to be explicitly passed-in when invoking within a template.
+ * Third, Define single line computed properties.
+ * Fourth, Define multi-line computed properties.
+ * Finally, Define actions last. This provides a common place where actions can be found in each module.
+ * Override init. Rather than using the object's init hook via `Ember.on()`, override init and call `_super` with `...arguments`. This allows you to control execution order. [Don't Don't Override Init](https://dockyard.com/blog/2015/10/19/2015-dont-dont-override-init)
+ 
 ```javascript
   const {
     Component,
     computed,
     computed: { alias }
   } = Ember;
-  
+
   //Good
   export default Component.extend({
     // Defaults
     tagName: 'span',
+
+    // Required attrs
+    model: null,
+    displayText: '',
 
     // Single line Computed Properties
     post: alias('myPost'),
@@ -184,6 +194,14 @@ Do not use the prototype extension syntax as Ember is moving away from this conv
     authorName: computed('author.firstName', 'author.lastName', function() {
       /* Code */
     }),
+
+    // Override init and control execution order
+    init() {
+      this._super(...arguments);
+      this.foo();
+      this.bar();
+      this.baz();
+    });
 
     actions: {
       someAction: function() {
@@ -233,6 +251,48 @@ Do not use the prototype extension syntax as Ember is moving away from this conv
       <p>{{post.summar}}</p>
     </article>
   {{/each}}
+```
+
+ * Prefer double quotes to single quotes in **templates only**
+
+```handlebars
+  {{! Good }}
+  <button {{action "doThing"}}>Do Thing</button>
+
+  {{! Bad }}
+  <button {{action 'doThing'}}>Do Thing</button>
+```
+
+ * Multi-line expressions should specify attributes starting on the second line, and should be indented one deeper than the start of the component or helper name.
+
+```handlebars
+  {{! Good }}
+  {{x-thing
+      value=blah
+      options=options
+      label="thing"}}
+
+  {{! Bad }}
+  {{x-thing
+    value=blah
+    options=options
+    label="thing"}}
+
+  {{! Bad - This will be annoying to re-indent if you rename your component }}
+  {{x-thing value=blah
+            options=options
+            label="thing"}}
+```
+
+### Routing
+ * Dynamic segments should be underscored. This will allow Ember to resolve promises without extra serialization work.
+
+```javascript
+  // Good
+  this.route('foo', { path: ':foo_id' });
+
+  // Bad
+  this.route('foo', { path: ':fooId' });
 ```
 
 
