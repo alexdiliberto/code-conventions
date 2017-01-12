@@ -70,25 +70,65 @@ You can see some of our customized, high-level guidelines at the following site:
 ## Ember JS
 
 ### Ember Conventions
-Follow all project naming and structure onvenstions as outlined in [Ember CLI](http://www.ember-cli.com/).
+Follow all project naming and structure conventions as outlined in [Ember CLI](https://ember-cli.com/user-guide/#naming-conventions).
 
-- All route and template names will be dasherized. (Names which are more than 1 word will be separated by the dash "-" character.)
-- All *resources* will be in the top-level `templates/` directory.
-- All *routes* will be pulled from `templates/` sub-directories matching their parent resource.
+- All non-CSS file names will be dasherized. (Names which are more than 1 word will be separated by the dash "-" character.)
 - All components will be placed in `templates/components/`
-- All names corresponding to the same route will be the identical and will be placed into the appropriate directories. (controllers/, routes/, views/, templates/, etc.)
+- Always use the the native `Ember` implementation over raw javascript when you are able to do so. Example:
+
+```javascript
+  // Good - Using `Ember.getWithDefault` and `Ember.isNone` instead of raw javascript
+  const {
+    Component,
+    computed,
+    getWithDefault,
+    isNone
+  } = Ember;
+
+  export default Component.extend({
+    foo: 'bar',
+
+    fiz: computed('foo', function()  {
+      // If `this.get('foo') === undefined` then return '', else return `this.get('foo')`
+      return getWithDefault(this, 'foo', '');
+    }),
+
+    qux: computed('foo', function() {
+      // Returns `true` if the passed value is `null` or `undefined`
+      return isNone(this.get('foo'));
+    })
+  });
+
+  // Bad - Not using `Ember` specific APIs where you are able
+  const {
+    Component,
+    computed
+  } = Ember;
+
+  export default Component.extend({
+    foo: 'bar',
+
+    fiz: computed('foo', function()  {
+      return this.get('foo') || '';
+    }),
+
+    qux: computed('foo', function() {
+      const foo = this.get('foo');
+      return foo === null || foo === undefined;
+    })
+  });
+```
 
 ### Local Variables and Prototype Extensions
 Do not use the prototype extension syntax as Ember is moving away from this convention. Create local variables from the Ember namespace.
 
 ```javascript
-  // Good - Distilling each "module" from Ember down to its lowest level
+  // Good - ES6 destructuring to distill each Ember "module" to its lowest level
   const {
     Component,
-    computed,
+    computed: { alias },
     on
-  } = Ember; // Shorthand ES6 Destructuring Syntax
-  const { alias } = computed;
+  } = Ember;
 
   export default Component.extend({
     first: alias('firstName'),
@@ -103,7 +143,7 @@ Do not use the prototype extension syntax as Ember is moving away from this conv
     })
   });
 
-  // Bad - Using prototype extensions. No local variables.
+  // Bad - Using prototype extensions. No destructuring.
   export default Ember.Component.extend({
     first: Ember.computed.alias('firstName'),
     last: Ember.computed.alias('lastName'),
@@ -126,8 +166,14 @@ Do not use the prototype extension syntax as Ember is moving away from this conv
  * [Don't override init](http://reefpoints.dockyard.com/2014/04/28/dont-override-init.html). Unless you want to change an object's `init` function, perform actions by hooking into the object's `init` hook via `on`. This prevents you from forgetting to call `_super`.
 
 ```javascript
+  const {
+    Component,
+    computed,
+    computed: { alias }
+  } = Ember;
+  
   //Good
-  export default Ember.Component.extend({
+  export default Component.extend({
     // Defaults
     tagName: 'span',
 
@@ -149,7 +195,7 @@ Do not use the prototype extension syntax as Ember is moving away from this conv
 
 ### Controllers
  * Define query params first. These should be listed above default values.
- * Do not use `ObjectController` or `ArrayController`, simply use `Controller`.
+ * Never use `ObjectController` or `ArrayController`, simply use `Controller`.
  * Alias your model. It provides a cleaner code, it is more maintainable, and will align well with future routable components within Ember.
 
 ```javascript
@@ -160,7 +206,7 @@ Do not use the prototype extension syntax as Ember is moving away from this conv
 ```
 
 ### Templates
- * Do not use partials. Always use components instead. Parials share scope with the parent view and components will provide a consistent scope.
+ * Never use partials. Always use components instead. Partials share scope with the parent view and components will provide a consistent scope.
  * Use block syntax 
 
 ```handlebars
