@@ -1051,18 +1051,23 @@ In the above Good example note the period needs to be right after the anchor tag
 
 This also makes sense:
 
+```html
 <h2>June 16<sup>th</sup></h2>
+```
+
 because there shouldn’t be a space or possibility of line break between the date and its ordinal indicator.
 
 ###Escaping Characters
 Escape the following characters with HTML entity encoding to prevent context switching into any execution context, such as script, style, or event handlers.
 
+```md
  & --> &amp;
  < --> &lt;
  > --> &gt;
  " --> &quot;
  ' --> &#x27;
  / --> &#x2F;
+```
 
 ###Smart Quotes
 Use [Smart Quotes](http://smartquotesforsmartpeople.com/) when appropriate.
