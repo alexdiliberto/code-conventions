@@ -1,31 +1,30 @@
 # Alex's Code Conventions
-*Last Updated: January 12, 2017 01:49 PM*
+*Last Updated: July 18, 2017 11:15 PM*
 
 ## Forward
 
 This document contains a very detailed outline of my most important JavaScript and CSS code conventions in a [Style Guide](http://styleguides.io/) format.
 
-When each member of our team is collaborating on a project, we are all likely developing separate pieces of code. Ideally, each of those separate pieces of code should uniformly look and behave in such a way that they were produced by a single developer. There are many reasons behind this belief system:
+When each member of the team is collaborating on a project, we are all likely developing separate pieces of code. Ideally, each of those separate pieces of code should uniformly look and behave in such a way that they were produced by a single developer. There are many reasons behind this belief system:
 
 - Easier to read and quickly inspect
 - Uniform patterns allow others to quickly understand basic flow, meaning, and functionality
 - The long-term value of software to an organization is in direct proportion to the quality of the codebase.
 - Neatness counts
 
-You can see some of our customized, high-level guidelines at the following site: [jsCode.org](http://jscode.org/03c498)
-
 
 ## Table of Contents
 
 [Ember JS](#ember-js)
 
-  1. [Ember Conventions](#ember-conventions)
+  1. [General Ember Conventions](#general-ember-conventions)
   1. [Local Variables and Prototype Extensions](#local-variables-and-prototype-extensions)
+  1. [Use Brace Expansion](#use-brace-expansion)
   1. [Organizing Modules](#organizing-modules)
   1. [Controllers](#controllers)
   1. [Templates](#templates)
   1. [Routing](#routing)
-  1. [General](#general)
+  1. [Other](#other)
   
 [Git](#git)
 
@@ -71,37 +70,46 @@ You can see some of our customized, high-level guidelines at the following site:
 
 ## Ember JS
 
-### Ember Conventions
-Follow all project naming and structure conventions as outlined in [Ember CLI](https://ember-cli.com/user-guide/#naming-conventions).
-
-- All non-CSS file names will be dasherized. (Names which are more than 1 word will be separated by the dash "-" character.)
-- All components will be placed in `templates/components/`
-- Always use the the native `Ember` implementation over raw javascript when you are able to do so. Example:
-
+### General Ember Conventions
+ * Follow all project naming, structure and layout conventions as outlined in the [Ember CLI documentation](https://ember-cli.com/user-guide/#naming-conventions).
+ * Always leverage Ember CLI's [eslint-plugin-ember](https://github.com/ember-cli/eslint-plugin-ember) for proper linter support. If you are using the [Atom](https://atom.io/) text editor you should use the [AtomLinter/linter-eslint](https://github.com/AtomLinter/linter-eslint) plugin to automatically apply `eslint --fix` on file save.
+ * [Don't forget `_super()`](https://poteto.github.io/component-best-practices/#/super). When overriding framework methods, always call `this._super(...arguments);`. This is necessary because certain methods need to setup certain things, and overriding them without a super call will prevent that, leading to unexpected behavior.
+ * For a safer accessor, use `Ember.set(foo, 'bar', 'baz')` and `Ember.get(foo, 'bar')` instead of `foo.set('bar', 'baz')` or `foo.get('bar')`. See the [following response by Ember core team member Stef Penner](https://www.reddit.com/r/emberjs/comments/3mr5as/question_why_use_embergetthis_prop_instead_of/cvhkaka) for more information.
+ * Always use Ember's [Javascript modules API syntax](https://github.com/emberjs/rfcs/pull/176) for importing values from modules. This allows Ember to leverage static analysis to eliminate unneeded code and  ship less bytes down to the client. This also helps speed up Javascript parsing and evaluating time on the client.
+ * Prefer to use the the `Ember` implementation over raw javascript when possible. Example:
+ * Override init. Rather than using the object's init hook via `Ember.on()`, override init and call `_super` with `...arguments`. This allows you to control execution order. [Don't Don't Override Init](https://dockyard.com/blog/2015/10/19/2015-dont-dont-override-init)
+ 
 ```javascript
-  // Good - Using `Ember.getWithDefault` and `Ember.isNone` instead of raw javascript
-  const {
-    Component,
-    computed,
-    getWithDefault,
-    isNone
-  } = Ember;
+  // GOOD - Using safe `Ember.get()` and `Ember.set()` accessors
+  // GOOD - Using Ember's Javascript modules API
+  // GOOD - Using `Ember.getWithDefault` and `Ember.isNone` instead of raw javascript
+  import Component from "@ember/component";
+  import { get, computed, getWithDefault } from "@ember/object";
+  import { isNone } from "@ember/utils";
 
   export default Component.extend({
     foo: 'bar',
 
-    fiz: computed('foo', function()  {
-      // If `this.get('foo') === undefined` then return '', else return `this.get('foo')`
-      return getWithDefault(this, 'foo', '');
+    fiz: computed('foo', {
+      get() {
+        // If `get(this, 'foo') === undefined` then return '', else return `get(this, 'foo')`
+        return getWithDefault(this, 'foo', '');
+      }
     }),
 
-    qux: computed('foo', function() {
+    qux: computed('foo', {
       // Returns `true` if the passed value is `null` or `undefined`
-      return isNone(this.get('foo'));
+      get() {
+        return isNone(get(this, 'foo'));
+      }
     })
   });
 
-  // Bad - Not using `Ember` specific APIs where you are able
+  //////////////////////////////////////////////////////////////////
+
+  // BAD - Using `<instance>.get` and `<instance>.set`
+  // BAD - Using globally destructured `Ember`
+  // BAD - Not using `Ember` specific APIs where you are able
   const {
     Component,
     computed
@@ -110,7 +118,7 @@ Follow all project naming and structure conventions as outlined in [Ember CLI](h
   export default Component.extend({
     foo: 'bar',
 
-    fiz: computed('foo', function()  {
+    fiz: computed('foo', function() {
       return this.get('foo') || '';
     }),
 
@@ -122,30 +130,38 @@ Follow all project naming and structure conventions as outlined in [Ember CLI](h
 ```
 
 ### Local Variables and Prototype Extensions
-Do not use the prototype extension syntax as Ember is moving away from this convention. Create local variables from the Ember namespace.
+Avoid using Ember's prototype extension syntax and instead prefer using corresponding functions from the Ember object. Create local variables from the Ember namespace.
 
 ```javascript
-  // Good - ES6 destructuring to distill each Ember "module" to its lowest level
-  const {
-    Component,
-    computed: { alias },
-    on
-  } = Ember;
+  // GOOD - Avoids using prototype extensions
+  import Component from "@ember/component";
+  import { computed } from "@ember/object";
+  import { alias } from "@ember/object/computed";
+  import { on } from "@ember/object/evented";
 
   export default Component.extend({
     first: alias('firstName'),
     last: alias('lastName'),
 
-    fullName: computed('first', 'last', function() {
-      /* Code */
+    fullName: computed('first', 'last', {
+      get() {
+        /* Code */
+      }
     }),
 
-    sayHello: on('didInsertElement', function() {
-      /* Code */
+    sayHello: on('didInsertElement', {
+      get() {
+        /* Code */
+      }
     })
   });
+  
+  //////////////////////////////////////////////////////////////////
 
-  // Bad - Using prototype extensions. No destructuring.
+  // BAD - Using prototype extensions
+  // BAD - Using global `Ember` import
+  import Ember from 'ember';
+  
   export default Ember.Component.extend({
     first: Ember.computed.alias('firstName'),
     last: Ember.computed.alias('lastName'),
@@ -160,65 +176,131 @@ Do not use the prototype extension syntax as Ember is moving away from this conv
   });
 ```
 
-### Use `Ember.get` / `Ember.set` over `<instance>.get` / `<instance>.set`
-For a safer accessor, use `Ember.set(foo, 'bar', 'baz')` and `Ember.get(foo, 'bar')` instead of `foo.set('bar', 'baz')` or `foo.get('bar')`. See the [following response by Ember core team member Stef Penner](https://www.reddit.com/r/emberjs/comments/3mr5as/question_why_use_embergetthis_prop_instead_of/cvhkaka) for more information.
+### Use Brace Expansion
+Improves readability and allows less redundancy. The dependent keys must be together (without space) for the brace expansion to properly work.
+
+```javascript
+  // GOOD - Using property brace expansion
+  fullName: computed('user.{firstName,lastName}', {
+    // Code
+  })
+
+  //////////////////////////////////////////////////////////////////
+
+  // BAD - Not using property brace expansion
+  fullName: computed('user.firstName', 'user.lastName', {
+    // Code
+  })
+```
 
 ### Organizing Modules
-How to organize the Javascript code within a single file/module:
- * First, Define your object's default values.
- * Second, Define required attributes you expect to be explicitly passed-in when invoking within a template.
- * Third, Define single line computed properties.
- * Fourth, Define multi-line computed properties.
- * Finally, Define actions last. This provides a common place where actions can be found in each module.
- * Override init. Rather than using the object's init hook via `Ember.on()`, override init and call `_super` with `...arguments`. This allows you to control execution order. [Don't Don't Override Init](https://dockyard.com/blog/2015/10/19/2015-dont-dont-override-init)
+Leverage Ember CLI's [eslint-plugin-ember](https://github.com/ember-cli/eslint-plugin-ember) addon for a great set of configurable rules for proper organization within [components](https://github.com/ember-cli/eslint-plugin-ember/blob/v3.6.2/lib/rules/order-in-components.js), [controllers](https://github.com/ember-cli/eslint-plugin-ember/blob/v3.6.2/lib/rules/order-in-controllers.js), [models](https://github.com/ember-cli/eslint-plugin-ember/blob/v3.6.2/lib/rules/order-in-models.js), and [routes](https://github.com/ember-cli/eslint-plugin-ember/blob/v3.6.2/lib/rules/order-in-routes.js)
  
+Components: 
+  1. Services
+  1. Default values
+  1. Single line computed properties
+  1. Multiline computed properties
+  1. Observers
+  1. Lifecycle Hooks
+  1. Actions
+  1. Custom / private methods
+
+Controllers:
+  1. Services
+  1. Query params
+  1. Default controller's properties
+  1. Custom properties
+  1. Single line computed properties
+  1. Multi line computed properties
+  1. Observers
+  1. Actions
+  1. Custom / private methods
+
+Models:
+  1. Attributes
+  1. Relations
+  1. Single line computed properties
+  1. Multiline computed properties
+  1. Other structures (custom methods etc.)
+
+Routes:
+  1. Services
+  1. Default route's properties
+  1. Custom properties
+  1. model() hook
+  1. Other route's methods (beforeModel etc.)
+  1. Actions
+  1. Custom / private methods
+
 ```javascript
-  const {
-    Component,
-    computed,
-    computed: { alias }
-  } = Ember;
+  import Component from "@ember/component";
+  import { computed } from "@ember/object";
+  import { alias } from "@ember/object/computed";
 
-  //Good
+  //GOOD - Component module organization follows best practices
+  // 1. Services
+  // 2. Default values
+  // 3. Single line computed properties
+  // 4. Multiline computed properties
+  // 5. Observers
+  // 6. Lifecycle Hooks
+  // 7. Actions
+  // 8. Custom / private methods
+  import Component from "@ember/component";
+  import { computed } from "@ember/object";
+  import { alias } from "@ember/object/computed";
+  import { inject } from "@ember/service"
+  
   export default Component.extend({
-    // Defaults
-    tagName: 'span',
+    // 1. Services
+    i18n: inject(),
 
-    // Required attrs
-    model: null,
-    displayText: '',
+    // 2. Defaults
+    role: 'sloth',
 
-    // Single line Computed Properties
-    post: alias('myPost'),
+    // 3. Single line Computed Property
+    vehicle: alias('car'),
 
-    // Multi-line Computed Properties
-    authorName: computed('author.firstName', 'author.lastName', function() {
-      /* Code */
+    // 4. Multiline Computed Property
+    levelOfHappiness: computed('attitude', 'health', {
+      get() {
+        let result = get(this, 'attitude') * get(this, 'health') * Math.random();
+        return result;  
+      }
     }),
 
-    // Override init and control execution order
+    // 6. Lifecycle Hooks
     init() {
       this._super(...arguments);
-      this.foo();
-      this.bar();
-      this.baz();
-    });
-
+      
+      this._secretMethod();
+    },
+    
+    // 7. All actions
     actions: {
-      someAction: function() {
-        /* Code */
+      sneakyAction() {
+        return this._secretMethod();
       }
+    },
+
+    // 8. Custom / private methods
+    _secretMethod() {
+      // custom secret method logic
     }
   });
 ```
 
 ### Controllers
- * Define query params first. These should be listed above default values.
- * Never use `ObjectController` or `ArrayController`, simply use `Controller`.
+ * [Don't not use controllers](https://dockyard.com/blog/2017/06/16/ember-best-practices-what-are-controllers-good-for)
+ * Follow the recommended organization within [controllers](https://github.com/ember-cli/eslint-plugin-ember/blob/v3.6.2/lib/rules/order-in-controllers.js).
+ * Never use `ObjectController` or `ArrayController`; simply use `Controller`.
  * Alias your model. It provides a cleaner code, it is more maintainable, and will align well with future routable components within Ember.
 
 ```javascript
-  // Good
+  // GOOD - Alias your model
+  import Controller from "@ember/controller";
+  
   export default Controller.extend({
     user: alias('model')
   });
@@ -226,25 +308,25 @@ How to organize the Javascript code within a single file/module:
 
 ### Templates
  * Never use partials. Always use components instead. Partials share scope with the parent view and components will provide a consistent scope.
- * Use block syntax 
+ * Use new block syntax 
 
 ```handlebars
-  {{! Good }}
+  {{! GOOD }}
   {{#each posts as |post|}}
 
-  {{! Bad - Using old non-block syntax}}
+  {{! BAD - Using old non-block syntax}}
   {{#each post in posts}}
 ```
 
  * Use components in `{{#each}}` blocks. Contents of your each blocks should ideally be a single line. This will allow you to test the contents in isolation via unit tests, as your loop will likely contain more complex logic in this case.
 
 ```handlebars
-  {{! Good }}
+  {{! GOOD }}
   {{#each posts as |post|}}
     {{post-summary post=post}}
   {{/each}}
 
-  {{! Bad }}
+  {{! BAD - Should be extracted out into a component }}
   {{#each posts as |post|}}
     <article>
       <img src={{post.image}} />
@@ -257,54 +339,61 @@ How to organize the Javascript code within a single file/module:
  * Prefer double quotes to single quotes in **templates only**
 
 ```handlebars
-  {{! Good }}
+  {{! GOOD }}
   <button {{action "doThing"}}>Do Thing</button>
 
-  {{! Bad }}
+  {{! BAD }}
   <button {{action 'doThing'}}>Do Thing</button>
 ```
 
  * Multi-line expressions should specify attributes starting on the second line, and should be indented one deeper than the start of the component or helper name.
 
 ```handlebars
-  {{! Good }}
+  {{! GOOD }}
   {{x-thing
       value=blah
       options=options
       label="thing"}}
 
-  {{! Bad }}
+  {{! BAD }}
   {{x-thing
     value=blah
     options=options
     label="thing"}}
 
-  {{! Bad - This will be annoying to re-indent if you rename your component }}
+  {{! BAD - This will be annoying to re-indent if you rename your component }}
   {{x-thing value=blah
             options=options
             label="thing"}}
 ```
 
 ### Routing
- * Dynamic segments should be underscored. This will allow Ember to resolve promises without extra serialization work.
-
-```javascript
-  // Good
-  this.route('foo', { path: ':foo_id' });
-
-  // Bad
-  this.route('foo', { path: ':fooId' });
-```
-
-### General
- * Never use jQuery without the Ember Run Loop. Using plain jQuery invokes actions out of the Ember Run Loop. In order to have a control on all operations in Ember it's good practice to trigger actions in run loop.
+ * [Dynamic segments](https://guides.emberjs.com/v2.14.0/routing/defining-your-routes/#toc_dynamic-segments) should be underscored. This will allow Ember to resolve promises without extra serialization work.
 
 ```javascript
   // GOOD
-  Ember.$('#something-rendered-by-jquery-plugin').on(
+  this.route('foo', { path: ':foo_id' });
+
+  //////////////////////////////////////////////////////////////////
+
+  // BAD
+  this.route('foo', { path: ':fooId' });
+```
+
+### Other
+ * Never use jQuery without the [Ember Run Loop](https://github.com/eoinkelly/ember-runloop-handbook). Using plain jQuery invokes actions out of the Ember Run Loop. In order to have a control on all operations in Ember it's good practice to trigger actions in run loop.
+
+```javascript
+  // GOOD
+  import $ from "jquery";
+  import { bind } from "@ember/runloop";
+  
+  $('#something-rendered-by-jquery-plugin').on(
     'click',
-    Ember.run.bind(this, this._handlerActionFromController)
+    bind(this, this._handlerActionFromController)
   );
+
+  //////////////////////////////////////////////////////////////////
 
   // BAD
   Ember.$('#something-rendered-by-jquery-plugin').on('click', () => {
@@ -312,50 +401,65 @@ How to organize the Javascript code within a single file/module:
   });
 ```
 
- * Never use observers. Usage of observers is very easy BUT it leads to hard to reason about consequences. Unless observers are necessary, it's better to avoid them. See the following video for more information: [Observer Tip Jar by Stef Penner](https://www.youtube.com/watch?v=7PUX27RKCq0)
+ * [Never use observers](https://github.com/ember-best-practices/eslint-plugin-ember-best-practices/blob/master/guides/rules/no-observers.md#no-observers). Usage of observers is very easy *BUT* it leads to hard to reason about consequences. Since observers eagerly compute we have these possible times period when data within the application is not actually "correct" or what you would expect. When we introduce many observers into an application this problem compounds on itself. Unless observers are necessary, it's better to avoid them. See the following video for more information: [Observer Tip Jar by Stef Penner](https://www.youtube.com/watch?v=7PUX27RKCq0)
 
-```javascript
-{{input value=text key-up="change"}}
-
-// GOOD
-export default Controller.extend({
-  actions: {
-    change() {
-      console.log(`change detected: ${this.get('text')}`);
-    },
-  },
-});
-
-// BAD
-export default Model.extend({
-  change: Ember.observer('text', function() {
-    console.log(`change detected: ${this.get('text')}`);
-  },
-});
+```handlebars
+  {{input value=text key-up="change"}}
 ```
 
- * Don't introduce side-effects in computed properties. When using computed properties do not introduce side effects. It will make reasoning about the origin of the change much harder.
+```javascript
+  // GOOD
+  // `{{input value=text key-up="change"}}`
+  import Controller from "@ember/controller";
+  import { get } from "@ember/object"
+  
+  export default Controller.extend({
+    actions: {
+      change() {
+        console.log(`change detected: ${get(this, 'text')}`);
+      },
+    },
+  });
+
+  //////////////////////////////////////////////////////////////////
+
+  // BAD
+  // `{{input value=text}}`
+  export default Model.extend({
+    change: Ember.observer('text', function() {
+      console.log(`change detected: ${get(this, 'text')}`);
+    },
+  });
+```
+
+ * [Don't declare arrays or objects directly on Components](https://poteto.github.io/component-best-practices/#/leaky). Instead, add them on init. This is so we can ensure that each instance of the Component has its own independent state.
+ * [Don't introduce side-effects in computed properties](https://github.com/ember-best-practices/eslint-plugin-ember-best-practices/blob/master/guides/rules/no-side-effect-cp.md#no-computed-property-side-effects). It will make reasoning about the origin of the change much harder and invalidates proper data flow throughout an Ember application. Data should flows down from the route and send actions back up to modify that data -- where the child does not actually own the data.
 
 ```javascript
-import Ember from 'ember';
-
-const {
-  Component,
-  computed: { filterBy, alias },
-} = Ember;
+import Component from "@ember/component"
+import { filterBy, alias } from "@ember/object/computed";
 
 export default Component.extend({
-  users: [
-    { name: 'Foo', age: 15 },
-    { name: 'Bar', age: 16 },
-    { name: 'Baz', age: 15 }
-  ],
+  // GOOD: Don't declare arrays or objects directly on Components
+  // GOOD: Override init
+  // GOOD: Don't forget `_super()`
+  init() {
+    this._super(...arguments);
+    
+    set(this, 'users', [
+      { name: 'Foo', age: 15 },
+      { name: 'Bar', age: 16 },
+      { name: 'Baz', age: 15 }
+    ]);
+  },
 
   // GOOD:
   fifteen: filterBy('users', 'age', 15),
   fifteenAmount: alias('fifteen.length'),
 
-  // BAD:
+  //////////////////////////////////////////////////////////////////
+
+  // BAD
   fifteenAmount: 0,
   fifteen: computed('users', function() {
     const fifteen = this.get('users').filterBy('items', 'age', 15);
@@ -365,22 +469,8 @@ export default Component.extend({
 });
 ```
 
- * Use brace expansion. This allows much less redundancy and is easier to read. **Note that the dependent keys must be together (without space)** for the brace expansion to work.
-
-```js
-// Good
-fullName: computed('user.{firstName,lastName}', {
-  // Code
-})
-
-// Bad
-fullName: computed('user.firstName', 'user.lastName', {
-  // Code
-})
-```
-
-
 ## Git
+Use the [Gitflow Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows#gitflow-workflow) model.
 
 ### Creating feature branches
 ```bash
@@ -406,8 +496,9 @@ git merge develop
 # Finish the feature and Create PR
 git push
 
-# Delete the remote branch once merged
-git push origin :feature/my-new-feature
+# Delete and prune the remote branch once merged
+git push origin --delete feature/my-new-feature
+git remote prune origin
 ```
 
 ### Commit Contents
@@ -453,13 +544,11 @@ git merge develop
 git stash pop
 ```
 
-
 ## Text Editor
+Choose your favorite text editor. Some great options include:
 
-Choose your favorite text editor. Some good options include:
-
+ - [Atom](https://atom.io/) (my personal favorite)
  - [Sublime Text](https://www.sublimetext.com/)
- - [Atom](https://atom.io/)
  - [VIM](http://www.vim.org/)
 
 ### VIM
@@ -529,6 +618,38 @@ For Sublime Text 2 users, I'm including a nice starting point for your user-spec
 
 ```
 
+### Atom
+For Atom users, I'm including my base `config.cson` file:
+
+```json
+/* ~/.atom/config.cson */
+"*":
+  core:
+    telemetryConsent: "no"
+    themes: [
+      "atom-dark-ui"
+      "monokai"
+    ]
+    whitespace:
+      removeTrailingWhitespace: false
+  editor:
+    fontFamily: "Menlo"
+    fontSize: 14
+    invisibles: {}
+    nonWordCharacters: "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?…"
+    preferredLineLength: 120
+    showIndentGuide: true
+    softWrap: true
+    softWrapAtPreferredLineLength: true
+  "exception-reporting":
+    userId: "884440fb-9e84-fcf9-8239-ecee423c921e"
+  "linter-eslint":
+    fixOnSave: true
+  "linter-ui-default":
+    panelHeight: 81
+  welcome:
+    showOnStartup: false
+```
 
 ## JavaScript
 
@@ -536,8 +657,7 @@ For Sublime Text 2 users, I'm including a nice starting point for your user-spec
 - Use soft-tabs with a **2** space indent.
 - Be generous with well-written and clear comments.
 - Each line should be no longer than **120** characters.
-  - Using *Sublime Text 2*, you can enforce this rule visually with a vertical ruler at 120 characters by customing your **User Settings** file. *(Shown above greater detail below in the `Sublime Text 2` section)*
-
+  - Using *Sublime Text 2*, you can enforce this rule visually with a vertical ruler at 120 characters by customizing your **User Settings** file. *(Shown above greater detail below in the `Sublime Text 2` section)*
 
 ### JS Naming
 - For variables and functions, names should be limited to alphanumeric characters and, in some cases, the underscore character.
@@ -547,32 +667,32 @@ For Sublime Text 2 users, I'm including a nice starting point for your user-spec
 - The first word of a variable name should be a noun (not a verb).
 
 ```javascript
-// Good
-const accountNumber = "8401-1";
+  // GOOD
+  const accountNumber = "8401-1";
 
-// Bad: Not camel case
-const AccountNumber = "8401-1";
-const account_number = "8401-1";
+  // BAD: Not camel case
+  const AccountNumber = "8401-1";
+  const account_number = "8401-1";
 
-// Bad: Begins with a verb
-const getAccountNumber = "8401-1";
+  // BAD: Begins with a verb
+  const getAccountNumber = "8401-1";
 ```
 
 - Function names shuld also be formatted using camel case.
 - The first word of a function should be a verb (not a noun).
 
 ```javascript
-// Good
+// GOOD
 function doSomething() {
   // code
 }
 
-// Bad: Not camel case
+// BAD: Not camel case
 function Do_Something() {
   // code
 }
 
-// Bad: Begins with a noun
+// BAD: Begins with a noun
 function car() {
   // code
 }
@@ -582,10 +702,10 @@ function car() {
 - Never use `var`. Prefer [`let`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let) to declare a block scope local variable. Use [`const`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/const) to declare a constant whose value can not be re-assigned in the given scope (global or local).
 
 ```javascript
-// Good
+// GOOD
 const car = new Mustang();
 
-// Bad: Glabal variable
+// BAD: Glabal variable
 car = new Mustang();
 ```
 
@@ -593,7 +713,7 @@ car = new Mustang();
 - Always use one `const` declaration per variable.
 
 ```javascript
-  // Good
+  // GOOD
   const store;
   const count = 10;
   const name  = "Alex";
@@ -621,7 +741,7 @@ car = new Mustang();
 
 - Keep variable declarations as the first statements of a function's body.
 - Group `const` declarations, then group `let` declarations
-- Never initialize a variable to `null` if it doesn't have an initial value. In this case you will **ONLY** declare the variable.
+- Never initialize a variable to `null` if it does not have an initial value. In this case you will **ONLY** declare the variable.
 
 ```javascript
   // Good
