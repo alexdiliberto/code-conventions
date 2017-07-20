@@ -1,5 +1,5 @@
 # Alex's Code Conventions
-*Last Updated: July 18, 2017 11:15 PM*
+*Last Updated: July 20, 2017 12:08 AM*
 
 ## Forward
 
@@ -19,8 +19,12 @@ When each member of the team is collaborating on a project, we are all likely de
 
   1. [General Ember Conventions](#general-ember-conventions)
   1. [Local Variables and Prototype Extensions](#local-variables-and-prototype-extensions)
-  1. [Use Brace Expansion](#use-brace-expansion)
+  1. [Property Brace Expansion](#property-brace-expansion)
+  1. [Super](#super)
+  1. [Override Init](#override-init)
+  1. [Observers](#observers)
   1. [Organizing Modules](#organizing-modules)
+  1. [Run Loop](#run-loop)
   1. [Controllers](#controllers)
   1. [Templates](#templates)
   1. [Routing](#routing)
@@ -35,8 +39,9 @@ When each member of the team is collaborating on a project, we are all likely de
 
 [Text Editor](#text-editor)
 
-  1. [VIM](#vim)
+  1. [Atom](#atom)
   1. [Sublime Text](#sublime-text)
+  1. [VIM](#vim)
 
 [Javascript](#javascript)
 
@@ -73,11 +78,9 @@ When each member of the team is collaborating on a project, we are all likely de
 ### General Ember Conventions
  * Follow all project naming, structure and layout conventions as outlined in the [Ember CLI documentation](https://ember-cli.com/user-guide/#naming-conventions).
  * Always leverage Ember CLI's [eslint-plugin-ember](https://github.com/ember-cli/eslint-plugin-ember) for proper linter support. If you are using the [Atom](https://atom.io/) text editor you should use the [AtomLinter/linter-eslint](https://github.com/AtomLinter/linter-eslint) plugin to automatically apply `eslint --fix` on file save.
- * [Don't forget `_super()`](https://poteto.github.io/component-best-practices/#/super). When overriding framework methods, always call `this._super(...arguments);`. This is necessary because certain methods need to setup certain things, and overriding them without a super call will prevent that, leading to unexpected behavior.
  * For a safer accessor, use `Ember.set(foo, 'bar', 'baz')` and `Ember.get(foo, 'bar')` instead of `foo.set('bar', 'baz')` or `foo.get('bar')`. See the [following response by Ember core team member Stef Penner](https://www.reddit.com/r/emberjs/comments/3mr5as/question_why_use_embergetthis_prop_instead_of/cvhkaka) for more information.
  * Always use Ember's [Javascript modules API syntax](https://github.com/emberjs/rfcs/pull/176) for importing values from modules. This allows Ember to leverage static analysis to eliminate unneeded code and  ship less bytes down to the client. This also helps speed up Javascript parsing and evaluating time on the client.
  * Prefer to use the the `Ember` implementation over raw javascript when possible. Example:
- * Override init. Rather than using the object's init hook via `Ember.on()`, override init and call `_super` with `...arguments`. This allows you to control execution order. [Don't Don't Override Init](https://dockyard.com/blog/2015/10/19/2015-dont-dont-override-init)
  
 ```javascript
   // GOOD - Using safe `Ember.get()` and `Ember.set()` accessors
@@ -176,8 +179,8 @@ Avoid using Ember's prototype extension syntax and instead prefer using correspo
   });
 ```
 
-### Use Brace Expansion
-Improves readability and allows less redundancy. The dependent keys must be together (without space) for the brace expansion to properly work.
+### Property Brace Expansion
+Always prefer to use Ember's property brace expansion for computed property dependent keys. This will help improve readability and it provides less redundancy overall. The dependent keys must be together (**without space**) for the brace expansion to properly work.
 
 ```javascript
   // GOOD - Using property brace expansion
@@ -191,6 +194,68 @@ Improves readability and allows less redundancy. The dependent keys must be toge
   fullName: computed('user.firstName', 'user.lastName', {
     // Code
   })
+```
+
+### Super
+[Don't forget `_super()`](https://poteto.github.io/component-best-practices/#/super). When overriding framework methods, always call `this._super(...arguments);`. This is necessary because certain methods need to setup certain things, and overriding them without a `super` call will prevent that, leading to unexpected behavior.
+
+### Override Init
+[Override init](https://dockyard.com/blog/2015/10/19/2015-dont-dont-override-init). Rather than using the object's init hook via `Ember.on()`, override init and call `_super` with `...arguments`. This allows you to control execution order.
+
+```javascript
+  // GOOD - Overriding `init()`
+  init() {
+    this._super(...arguments);
+    
+    this.foo();
+    this.bar();
+    this.baz();
+  });
+
+  //////////////////////////////////////////////////////////////////
+
+  // BAD
+  foo: on('init', () => {
+    // ...
+  }),
+  bar: on('init', () => {
+    // ...
+  }),
+  baz: on('init', () => {
+    // ...
+  })
+```
+
+### Observers
+[Never use observers](https://github.com/ember-best-practices/eslint-plugin-ember-best-practices/blob/master/guides/rules/no-observers.md#no-observers). Usage of observers is very easy *BUT* it leads to hard to reason about consequences. Since observers eagerly compute we have these possible times period when data within the application is not actually "correct" or what you would expect. When we introduce many observers into an application this problem compounds on itself. Unless observers are necessary, it's better to avoid them. See the following video for more information: [Observer Tip Jar by Stef Penner](https://www.youtube.com/watch?v=7PUX27RKCq0)
+
+```handlebars
+ {{input value=text key-up="change"}}
+```
+
+```javascript
+  // GOOD
+  // `{{input value=text key-up="change"}}`
+  import Controller from "@ember/controller";
+  import { get } from "@ember/object"
+
+  export default Controller.extend({
+    actions: {
+      change() {
+        console.log(`change detected: ${get(this, 'text')}`);
+      },
+    },
+  });
+
+  //////////////////////////////////////////////////////////////////
+
+  // BAD
+  // `{{input value=text}}`
+  export default Ember.Model.extend({
+    change: Ember.observer('text', function() {
+      console.log(`change detected: ${get(this, 'text')}`);
+    })
+  });
 ```
 
 ### Organizing Modules
@@ -234,11 +299,7 @@ Routes:
   1. Custom / private methods
 
 ```javascript
-  import Component from "@ember/component";
-  import { computed } from "@ember/object";
-  import { alias } from "@ember/object/computed";
-
-  //GOOD - Component module organization follows best practices
+  // GOOD - Component module organization follows best practices
   // 1. Services
   // 2. Default values
   // 3. Single line computed properties
@@ -291,6 +352,27 @@ Routes:
   });
 ```
 
+### Run Loop
+Never use `jQuery` without the [Ember Run Loop](https://github.com/eoinkelly/ember-runloop-handbook). Using plain `jQuery` invokes actions out of the Ember Run Loop. In order to have a control on all operations in Ember it's good practice to trigger actions in run loop.
+
+```javascript
+  // GOOD
+  import $ from "jquery";
+  import { bind } from "@ember/runloop";
+
+  $('#something-rendered-by-jquery-plugin').on(
+    'click',
+    bind(this, this._handlerActionFromController)
+  );
+
+  //////////////////////////////////////////////////////////////////
+
+  // BAD
+  Ember.$('#something-rendered-by-jquery-plugin').on('click', () => {
+    this._handlerActionFromController();
+  });
+```
+
 ### Controllers
  * [Don't not use controllers](https://dockyard.com/blog/2017/06/16/ember-best-practices-what-are-controllers-good-for)
  * Follow the recommended organization within [controllers](https://github.com/ember-cli/eslint-plugin-ember/blob/v3.6.2/lib/rules/order-in-controllers.js).
@@ -331,7 +413,7 @@ Routes:
     <article>
       <img src={{post.image}} />
       <h1>{{post.title}}</h2>
-      <p>{{post.summar}}</p>
+      <p>{{post.summary}}</p>
     </article>
   {{/each}}
 ```
@@ -381,98 +463,47 @@ Routes:
 ```
 
 ### Other
- * Never use jQuery without the [Ember Run Loop](https://github.com/eoinkelly/ember-runloop-handbook). Using plain jQuery invokes actions out of the Ember Run Loop. In order to have a control on all operations in Ember it's good practice to trigger actions in run loop.
-
-```javascript
-  // GOOD
-  import $ from "jquery";
-  import { bind } from "@ember/runloop";
-  
-  $('#something-rendered-by-jquery-plugin').on(
-    'click',
-    bind(this, this._handlerActionFromController)
-  );
-
-  //////////////////////////////////////////////////////////////////
-
-  // BAD
-  Ember.$('#something-rendered-by-jquery-plugin').on('click', () => {
-    this._handlerActionFromController();
-  });
-```
-
- * [Never use observers](https://github.com/ember-best-practices/eslint-plugin-ember-best-practices/blob/master/guides/rules/no-observers.md#no-observers). Usage of observers is very easy *BUT* it leads to hard to reason about consequences. Since observers eagerly compute we have these possible times period when data within the application is not actually "correct" or what you would expect. When we introduce many observers into an application this problem compounds on itself. Unless observers are necessary, it's better to avoid them. See the following video for more information: [Observer Tip Jar by Stef Penner](https://www.youtube.com/watch?v=7PUX27RKCq0)
-
-```handlebars
-  {{input value=text key-up="change"}}
-```
-
-```javascript
-  // GOOD
-  // `{{input value=text key-up="change"}}`
-  import Controller from "@ember/controller";
-  import { get } from "@ember/object"
-  
-  export default Controller.extend({
-    actions: {
-      change() {
-        console.log(`change detected: ${get(this, 'text')}`);
-      },
-    },
-  });
-
-  //////////////////////////////////////////////////////////////////
-
-  // BAD
-  // `{{input value=text}}`
-  export default Model.extend({
-    change: Ember.observer('text', function() {
-      console.log(`change detected: ${get(this, 'text')}`);
-    },
-  });
-```
-
  * [Don't declare arrays or objects directly on Components](https://poteto.github.io/component-best-practices/#/leaky). Instead, add them on init. This is so we can ensure that each instance of the Component has its own independent state.
  * [Don't introduce side-effects in computed properties](https://github.com/ember-best-practices/eslint-plugin-ember-best-practices/blob/master/guides/rules/no-side-effect-cp.md#no-computed-property-side-effects). It will make reasoning about the origin of the change much harder and invalidates proper data flow throughout an Ember application. Data should flows down from the route and send actions back up to modify that data -- where the child does not actually own the data.
 
 ```javascript
-import Component from "@ember/component"
-import { filterBy, alias } from "@ember/object/computed";
+  import Component from "@ember/component"
+  import { filterBy, alias } from "@ember/object/computed";
 
-export default Component.extend({
-  // GOOD: Don't declare arrays or objects directly on Components
-  // GOOD: Override init
-  // GOOD: Don't forget `_super()`
-  init() {
-    this._super(...arguments);
-    
-    set(this, 'users', [
-      { name: 'Foo', age: 15 },
-      { name: 'Bar', age: 16 },
-      { name: 'Baz', age: 15 }
-    ]);
-  },
+  export default Component.extend({
+    // GOOD: Don't declare arrays or objects directly on Components
+    // GOOD: Override init
+    // GOOD: Don't forget `_super()`
+    init() {
+      this._super(...arguments);
+      
+      set(this, 'users', [
+        { name: 'Foo', age: 15 },
+        { name: 'Bar', age: 16 },
+        { name: 'Baz', age: 15 }
+      ]);
+    },
 
-  // GOOD:
-  fifteen: filterBy('users', 'age', 15),
-  fifteenAmount: alias('fifteen.length'),
+    // GOOD:
+    fifteen: filterBy('users', 'age', 15),
+    fifteenAmount: alias('fifteen.length'),
 
-  //////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////
 
-  // BAD
-  fifteenAmount: 0,
-  fifteen: computed('users', function() {
-    const fifteen = this.get('users').filterBy('items', 'age', 15);
-    this.set('fifteenAmount', fifteen.length); // SIDE EFFECT!
-    return fifteen;
-  })
-});
+    // BAD
+    fifteenAmount: 0,
+    fifteen: computed('users', function() {
+      const fifteen = this.get('users').filterBy('items', 'age', 15);
+      this.set('fifteenAmount', fifteen.length); // SIDE EFFECT!
+      return fifteen;
+    })
+  });
 ```
 
 ## Git
 Use the [Gitflow Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows#gitflow-workflow) model.
 
-### Creating feature branches
+### Creating Feature Branches
 ```bash
 # Start the feature
 git checkout -b feature/my-new-feature
@@ -484,7 +515,7 @@ git push -u origin feature/my-new-feature
 git commit
 git commit
 git commit
-...
+# ...
 git push
 
 # For completing a feature get the most recent version of all the code.
@@ -496,7 +527,7 @@ git merge develop
 # Finish the feature and Create PR
 git push
 
-# Delete and prune the remote branch once merged
+# After the feature is merged, delete and prune the remote branch
 git push origin --delete feature/my-new-feature
 git remote prune origin
 ```
@@ -547,23 +578,46 @@ git stash pop
 ## Text Editor
 Choose your favorite text editor. Some great options include:
 
- - [Atom](https://atom.io/) (my personal favorite)
+ - [Atom](https://atom.io/) (*my personal favorite*)
  - [Sublime Text](https://www.sublimetext.com/)
  - [VIM](http://www.vim.org/)
 
-### VIM
-For VIM users, the following is a great resource:
+### Atom
+For Atom users, I'm including my base `config.cson` file located at `~/.atom/config.cson`:
 
-[Vim Adventures](http://vim-adventures.com/)
+```json
+"*":
+  core:
+    telemetryConsent: "no"
+    themes: [
+      "atom-dark-ui"
+      "monokai"
+    ]
+    whitespace:
+      removeTrailingWhitespace: false
+  editor:
+    fontFamily: "Menlo"
+    fontSize: 14
+    invisibles: {}
+    nonWordCharacters: "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?…"
+    preferredLineLength: 120
+    showIndentGuide: true
+    softWrap: true
+    softWrapAtPreferredLineLength: true
+  "exception-reporting":
+    userId: "884440fb-9e84-fcf9-8239-ecee423c921e"
+  "linter-eslint":
+    fixOnSave: true
+  "linter-ui-default":
+    panelHeight: 81
+  welcome:
+    showOnStartup: false
+```
 
 ### Sublime Text
 For Sublime Text 2 users, I'm including a nice starting point for your user-specific `Preferences.sublime-settings` file:
 
 ```json
-/*
-  Preferences.sublime-settings
-  Path: ~/Library/Application Support/Sublime Text 2/Packages/User/Preferences.sublime-settings
-*/
 {
   "auto_complete_commit_on_tab": true,
   "bold_folder_labels": true,
@@ -615,41 +669,12 @@ For Sublime Text 2 users, I'm including a nice starting point for your user-spec
   "word_wrap": true,
   "wrap_width": 120
 }
-
 ```
 
-### Atom
-For Atom users, I'm including my base `config.cson` file:
+### VIM
+For VIM users, the following is a great learning resource:
 
-```json
-/* ~/.atom/config.cson */
-"*":
-  core:
-    telemetryConsent: "no"
-    themes: [
-      "atom-dark-ui"
-      "monokai"
-    ]
-    whitespace:
-      removeTrailingWhitespace: false
-  editor:
-    fontFamily: "Menlo"
-    fontSize: 14
-    invisibles: {}
-    nonWordCharacters: "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?…"
-    preferredLineLength: 120
-    showIndentGuide: true
-    softWrap: true
-    softWrapAtPreferredLineLength: true
-  "exception-reporting":
-    userId: "884440fb-9e84-fcf9-8239-ecee423c921e"
-  "linter-eslint":
-    fixOnSave: true
-  "linter-ui-default":
-    panelHeight: 81
-  welcome:
-    showOnStartup: false
-```
+[Vim Adventures](http://vim-adventures.com/)
 
 ## JavaScript
 
@@ -670,43 +695,43 @@ For Atom users, I'm including my base `config.cson` file:
   // GOOD
   const accountNumber = "8401-1";
 
-  // BAD: Not camel case
+  // BAD - Not camel case
   const AccountNumber = "8401-1";
   const account_number = "8401-1";
 
-  // BAD: Begins with a verb
+  // BAD - Begins with a verb
   const getAccountNumber = "8401-1";
 ```
 
-- Function names shuld also be formatted using camel case.
+- Function names should also be formatted using camel case.
 - The first word of a function should be a verb (not a noun).
 
 ```javascript
-// GOOD
-function doSomething() {
-  // code
-}
+  // GOOD
+  function doSomething() {
+    // code
+  }
 
-// BAD: Not camel case
-function Do_Something() {
-  // code
-}
+  // BAD - Not camel case
+  function Do_Something() {
+    // code
+  }
 
-// BAD: Begins with a noun
-function car() {
-  // code
-}
+  // BAD - Begins with a noun
+  function car() {
+    // code
+  }
 ```
 
 ### Variable Declarations
 - Never use `var`. Prefer [`let`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let) to declare a block scope local variable. Use [`const`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/const) to declare a constant whose value can not be re-assigned in the given scope (global or local).
 
 ```javascript
-// GOOD
-const car = new Mustang();
+  // GOOD
+  const car = new Mustang();
 
-// BAD: Glabal variable
-car = new Mustang();
+  // BAD - Global variable
+  car = new Mustang();
 ```
 
 - All variables should be declared before used.
@@ -720,20 +745,20 @@ car = new Mustang();
   const found = false;
   const empty;
 
-  // Bad: One `const` for multiple variables (much harder to spot global variable errors)
+  // BAD - One `const` for multiple variables (much harder to spot global variable errors)
   const store,
       count = 10,
       name  = "Alex",
       found = false;
       empty;
 
-  // Bad: Improper initialization alignment, Incorrect indentation
+  // BAD - Improper initialization alignment, Incorrect indentation
   const count       =10;
   const name = "Alex";
   const found  =    false;
   const empty;
 
-  // Bad: Multiple declarations on one line
+  // BAD - Multiple declarations on one line
   const count = 10;
   const name  = "Alex";
   const found = false, empty;
@@ -744,7 +769,7 @@ car = new Mustang();
 - Never initialize a variable to `null` if it does not have an initial value. In this case you will **ONLY** declare the variable.
 
 ```javascript
-  // Good
+  // GOOD
   const hogwarts = "Hogwarts School of Witchcraft and Wizardry";
   const Gryffindor = "Gryffindor";
   const Slytherin = "Slytherin";
@@ -752,13 +777,13 @@ car = new Mustang();
   let i;
   let length;
   
-  // Bad: Improper Alignment. Multiple variables declared per line.
+  // BAD - Improper Alignment. Multiple variables declared per line.
   const hogwarts = "Hogwarts School of Witchcraft and Wizardry", Gryffindor = "Gryffindor", Slytherin = "Slytherin";
   let quidditchMatchTime = new Date(),
     i;
   let length;
   
-  // Bad: Not using `const` when appropriate. Initialized variables to `null`.
+  // BAD - Not using `const` when appropriate. Initialized variables to `null`.
   let hogwarts = "Hogwarts School of Witchcraft and Wizardry";
   let Gryffindor = "Gryffindor";
   let Slytherin = "Slytherin";
@@ -770,13 +795,13 @@ car = new Mustang();
 - Do not use global variables. Implied global variables should also never be used.
 
 ```javascript
-  // Bad: Improper initialization alignment, Incorrect indentation
+  // BAD - Improper initialization alignment, Incorrect indentation
   const count       =10;
   const name = "Alex";
   const found  =    false;
   const empty;
 
-  // Bad: Multiple variable statements, Multiple declarations on one line
+  // BAD - Multiple variable statements, Multiple declarations on one line
   const count = 10;
   const name  = "Alex";
   const found = false, empty;
@@ -791,7 +816,7 @@ car = new Mustang();
 - When a function is to be invoked immediately, the entire invocation expression should be wrapped in parens so that it is clear that the value being produced is the result of the function and not the function itself.
 
 ```javascript
-  // Good
+  // GOOD
   function outer(c, d) {
     const e = c * d;
 
@@ -802,12 +827,12 @@ car = new Mustang();
     return inner(0, 1);
   }
 
-  // Good
+  // GOOD
   div.onclick = function() {
     return false;
   };
 
-  // Bad: Improper spacing of first line, left brace on wrong line
+  // BAD - Improper spacing of first line, left brace on wrong line
   function doSomething (arg1, arg2)
   {
     return arg1 + arg2;
@@ -817,7 +842,7 @@ car = new Mustang();
 - Immediately invoked function expression format
 
 ```javascript
-  //Good
+  // GOOD
   (() => {
     console.log('Herp Derp');
   })();
@@ -826,12 +851,12 @@ car = new Mustang();
 - Never user `arguments`, instead use the rest syntax `...`
 
 ```javascript
-  //Good
+  // GOOD
   function concatAll(...args) {
     return args.join('');
   }
   
-  //Bad: `arguments` is not explicit and not an actual JS `Array`
+  // BAD - `arguments` is not explicit and not an actual JS `Array`
   function concatAll() {
     const args = [].slice.call(arguments);
     return args.join('');
@@ -841,12 +866,12 @@ car = new Mustang();
 - Use the default parameter syntax rather than manipulating function arguments within the function body.
 
 ```javascript
-  // Good
+  // GOOD
   function foo(opts = {}) {
     //...
   }
   
-  // Bad: Mutating function arguments in the body.
+  // BAD - Mutating function arguments in the body
   function foo(opts) {
     opts = opts || {};
     //...
@@ -854,19 +879,19 @@ car = new Mustang();
 ```
 
 - Use arrow functions notation in place of a normally used anonymous function. Arrow functions will execute with the correct context of `this`.
-- If the function body is small and will cleanly fit on one-line, the you may omit the brances and use the implicit return value.
+- If the function body is small and will cleanly fit on one-line, the you may omit the braces and use the implicit return value.
 - Always use parentheses around the arguments (including single arguments) for readability
 
 ```javascript
-  // Good
+  // GOOD
   [1,2,3].map((x) => {
     return x * x;
   });
   
-  // Even Better
+  // GOOD (Even Better)
   [1,2,3].map((x) => x * x);
   
-  // Bad
+  // BAD
   [1,2,3].map(function(number) {
     return number * number;
   });
@@ -877,14 +902,14 @@ car = new Mustang();
 - If you need multi-line strings use the template literal format.
 
 ```javascript
-  // Good
+  // GOOD
   const name = "Alex DiLiberto";
 
-  // Good
+  // GOOD
   const greeting = `Hello, my name
   is ${name}`;
 
-  // Bad
+  // BAD
   const greeting = "Hello, my name \
   is Alex DiLiberto.";
 ```
@@ -892,27 +917,27 @@ car = new Mustang();
 Numbers should be written as decimal integers, e-notation integers, hexadecimal integers, or floating-point decimals with at least one digit before and one digit after the decimal point. Do **NOT** use octal literals.
 
 ```javascript
-// Good
-let count = 10;
+  // GOOD
+  let count = 10;
 
-// Good
-let price = 10.0;
-let price = 10.00;
+  // GOOD
+  let price = 10.0;
+  let price = 10.00;
 
-// Good
-let num = 0xA2;
+  // GOOD
+  let num = 0xA2;
 
-// Good
-let num = 1e23;
+  // GOOD
+  let num = 1e23;
 
-// Bad: Hanging decimal point
-let price = 10.;
+  // BAD - Hanging decimal point
+  let price = 10.;
 
-// Bad: Leading decimal point
-let price = .1;
+  // BAD - Leading decimal point
+  let price = .1;
 
-// Bad: Octal (base 8) is deprecated
-let num = 010;
+  // BAD - Octal (base 8) is deprecated
+  let num = 010;
 ```
 
 - `null` should be used only in the following situations:
@@ -922,38 +947,38 @@ let num = 010;
   1. To return from a function where an object is expected
 
 ```javascript
-// Good
-function getPerson() {
-  if (condition) {
-    return new Person("Alex");
-  } else {
-    return null;
+  // GOOD
+  function getPerson() {
+    if (condition) {
+      return new Person("Alex");
+    } else {
+      return null;
+    }
   }
-}
 
-// Bad: Testing against an uninitialized variable
-let person;
-if (person != null) {
-  doSomething();
-}
-
-// Bad: Testing to see if an argument was passed
-function doSomething(arg1, arg2, arg3, arg4) {
-  if (arg4 != null) {
-    doSomethingElse();
+  // BAD - Testing against an uninitialized variable
+  let person;
+  if (person != null) {
+    doSomething();
   }
-}
+
+  // BAD - Testing to see if an argument was passed
+  function doSomething(arg1, arg2, arg3, arg4) {
+    if (arg4 != null) {
+      doSomethingElse();
+    }
+  }
 ```
 
 - Never use `undefined` as a literal. To test if a variable has been defined, use the `typeof` operator.
 
 ```javascript
-// Good
+// GOOD
 if (typeof variable == "undefined") {
   doSomething();
 }
 
-// Bad: Using undefined literal
+// BAD - Using undefined literal
 if (variable == undefined) {
   doSomething();
 }
@@ -964,15 +989,15 @@ if (variable == undefined) {
 - When parentheses are used, there should be no white space immediately after the opening paren or immediately before the closing paren.
 
 ```javascript
-// Good
+// GOOD
 const found = (values[i] === item);
 
-// Good
+// GOOD
 if (found && (count > 10)) {
   doSomething();
 }
 
-// Bad: Missing spaces, Extra space after opening paren, Extra space around argument
+// BAD - Missing spaces, Extra space after opening paren, Extra space around argument
 for ( i=0; i<count; i++) {
   process( i );
 }
@@ -984,7 +1009,7 @@ for ( i=0; i<count; i++) {
 - If the value is a function, it should wrap under the property name and should have a blank line both before and after the function.
 
 ```javascript
-// Good
+// GOOD
 let object = {
   key1: value1,
   key2: value2,
@@ -996,7 +1021,7 @@ let object = {
   key3: value3
 };
 
-// Bad: Improper indenation, Missing blank lines around function
+// Bad: Improper indentation, Missing blank lines around function
 let object = {
                key1: value1,
                key2: value2,
@@ -1026,13 +1051,13 @@ Comments may be used to annotate pieces of code with additional information. The
 - The `if` class of statements should have the following form:
 
 ```javascript
-if (condition) {
-  statements
-} else if (condition) {
-  statements
-} else {
-  statements
-}
+  if (condition) {
+    statements
+  } else if (condition) {
+    statements
+  } else {
+    statements
+  }
 ```
 
 
@@ -1046,16 +1071,16 @@ if (condition) {
 - Any `$variable` or `@mixin` that is used in more than one file should be put in `globals/`. Others should be put at the top of the file where they're used.
 
 ```scss
-/* Good coding style example! */
-.styleguide-format {
-  border: 1px solid #0F0;
-  color: #000;
-  background: rgba(0,0,0,0.5);
-}
+  /* Good coding style example! */
+  .styleguide-format {
+    border: 1px solid #0F0;
+    color: #000;
+    background: rgba(0,0,0,0.5);
+  }
 ```
 
 ### File Structure
-In general, the CSS file organization should follow something like this:
+In general, the CSS file organization should use the following format:
 
 ```bash
   css/
@@ -1079,43 +1104,43 @@ In general, the CSS file organization should follow something like this:
 Use ID and class names that are as short as possible but as long as necessary.
 
 ```scss
-.nav {
-  /* Instead of .navigation */
-}
-.author {
-  /* Instead of .atr */
-}
+  .nav {
+    /* Instead of .navigation */
+  }
+  .author {
+    /* Instead of .atr */
+  }
 ```
 
 Do not concatenate words and abbreviations in selectors by any characters other than hyphens.
 
 ```scss
-.demo-image {
-  /* Instead of .demoimage or .demo_image */
-}
+  .demo-image {
+    /* Instead of .demoimage or .demo_image */
+  }
 ```
 
 ID names should be in lowerCamelCase (although, as mentioned above, this should be **AVOIDED** for CSS styling hooks)
 
 ```scss
-#pageContainer {
-}
+  #pageContainer {
+  }
 ```
 
 Class names should be in lowercase, with words separated by hyphens. (as mentioned above).
 
 ```scss
-.my-class-name {
-}
+  .my-class-name {
+  }
 ```
 
 HTML elements should be in all lowercase.
 
 ```scss
-body,
-div {
-  /* Instead of BODY, DIV */
-}
+  body,
+  div {
+    /* Instead of BODY, DIV */
+  }
 ```
 
 ### CSS Rules of Thumb
@@ -1128,20 +1153,20 @@ div {
 - Comments that refer to selector blocks should be on a separate line immediately before the block to which they refer.
 
 ```scss
-/* Comment about this selector block. */
-selector {
-  property: value; /* Comment about this property-value pair. */
-}
+  /* Comment about this selector block. */
+  selector {
+    property: value; /* Comment about this property-value pair. */
+  }
 ```
 
 - Multiple selectors should each be on a single line, with no space after each comma.
 
 ```scss
-selector1,
-selector2,
-selector3,
-selector4 {
-}
+  selector1,
+  selector2,
+  selector3,
+  selector4 {
+  }
 ```
 
 - Broad selectors allow us to be efficient, yet can have adverse consequences if not tested. Location-specific selectors can save us time, but will quickly lead to a cluttered stylesheet. Exercise your best judgement.
@@ -1150,13 +1175,13 @@ selector4 {
   - Just because if works for your one scenario, doesn't mean it will work for all examples and permutations.
 
 ```scss
-/*
- Magic Number example.
- AVOID this whenever possible!
-*/
-.box {
-  margin-top: 37px;
-}
+  /*
+    Magic Number example.
+    AVOID this whenever possible!
+  */
+  .box {
+    margin-top: 37px;
+  }
 ```
 
 - Strive to only include selectors that include semantics.
@@ -1164,20 +1189,19 @@ selector4 {
   - A `heading` has some.
   - A class defined on an element has plenty.
 
-
 ## HTML
 
-###Indentation and Line Breaks
+### Indentation and Line Breaks
 Break to a new line if the tag contains another element.
 
 ```html
-  <!-- Good -->
+  <!-- GOOD -->
   <p>
     This is a
     <a href="#">link</a>.
   </p>
 
-  <!-- Bad: All tags are grouped on a single line -->
+  <!-- BAD - All tags are grouped on a single line -->
   <p>This is a <a href="#">link</a>.</p>
 ```
 
@@ -1186,12 +1210,12 @@ In the above Good example note the period needs to be right after the anchor tag
 This also makes sense:
 
 ```html
-<h2>June 16<sup>th</sup></h2>
+  <h2>June 16<sup>th</sup></h2>
 ```
 
 because there shouldn’t be a space or possibility of line break between the date and its ordinal indicator.
 
-###Escaping Characters
+### Escaping Characters
 Escape the following characters with HTML entity encoding to prevent context switching into any execution context, such as script, style, or event handlers.
 
 ```md
@@ -1203,9 +1227,8 @@ Escape the following characters with HTML entity encoding to prevent context swi
  / --> &#x2F;
 ```
 
-###Smart Quotes
+### Smart Quotes
 Use [Smart Quotes](http://smartquotesforsmartpeople.com/) when appropriate.
-
 
 ## Resources
 
