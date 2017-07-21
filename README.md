@@ -28,7 +28,6 @@ When each member of the team is collaborating on a project, we are all likely de
   1. [Controllers](#controllers)
   1. [Templates](#templates)
   1. [Routing](#routing)
-  1. [Other](#other)
   
 [Git](#git)
 
@@ -82,6 +81,7 @@ When each member of the team is collaborating on a project, we are all likely de
  * Always use Ember's [Javascript modules API syntax](https://github.com/emberjs/rfcs/pull/176) for importing values from modules. This allows Ember to leverage static analysis to eliminate unneeded code and  ship less bytes down to the client. This also helps speed up Javascript parsing and evaluating time on the client.
  * Prefer to use the the `Ember` implementation over raw javascript when possible. Example:
  
+
 ```javascript
   // GOOD - Using safe `Ember.get()` and `Ember.set()` accessors
   // GOOD - Using Ember's Javascript modules API
@@ -132,6 +132,45 @@ When each member of the team is collaborating on a project, we are all likely de
   });
 ```
 
+ * [Don't declare arrays or objects directly on Components](https://poteto.github.io/component-best-practices/#/leaky). Instead, add them on init. This is so we can ensure that each instance of the Component has its own independent state.
+ * [Don't introduce side-effects in computed properties](https://github.com/ember-best-practices/eslint-plugin-ember-best-practices/blob/master/guides/rules/no-side-effect-cp.md#no-computed-property-side-effects). It will make reasoning about the origin of the change much harder and invalidates proper data flow throughout an Ember application. Data should flows down from the route and send actions back up to modify that data -- where the child does not actually own the data.
+
+```javascript
+  import Component from "@ember/component"
+  import { filterBy, alias } from "@ember/object/computed";
+
+  export default Component.extend({
+    // GOOD: Don't declare arrays or objects directly on Components
+    // GOOD: Override init
+    // GOOD: Don't forget `_super()`
+    init() {
+      this._super(...arguments);
+      
+      set(this, 'users', [
+        { name: 'Foo', age: 15 },
+        { name: 'Bar', age: 16 },
+        { name: 'Baz', age: 15 }
+      ]);
+    },
+
+    // GOOD:
+    fifteen: filterBy('users', 'age', 15),
+    fifteenAmount: alias('fifteen.length'),
+
+    //////////////////////////////////////////////////////////////////
+
+    // BAD
+    fifteenAmount: 0,
+    fifteen: computed('users', function() {
+      const fifteen = this.get('users').filterBy('items', 'age', 15);
+      this.set('fifteenAmount', fifteen.length); // SIDE EFFECT!
+      return fifteen;
+    })
+  });
+```
+
+ * [Don't use `sendAction()`](https://dockyard.com/blog/2015/10/29/ember-best-practice-stop-bubbling-and-use-closure-actions). Use [closure actions](https://alexdiliberto.com/posts/ember-closure-actions/) instead of bubbling actions via `sendAction()`. Ember's primary [action handling method changed after release v1.13](https://emberjs.com/blog/2015/06/12/ember-1-13-0-released.html#toc_closure-actions) with the introduction of closure actions. This change allows for a simpler paradigm where the action caller (child component for example) simply executes the passed-in "action" function with the proper context. This allows us to leverage some powerful techniques such as currying and passing back down return values after asynchronous action handlers finish executing on the route or controller.
+ 
 ### Local Variables and Prototype Extensions
 Avoid using Ember's prototype extension syntax and instead prefer using corresponding functions from the Ember object. Create local variables from the Ember namespace.
 
@@ -460,44 +499,6 @@ Never use `jQuery` without the [Ember Run Loop](https://github.com/eoinkelly/emb
 
   // BAD
   this.route('foo', { path: ':fooId' });
-```
-
-### Other
- * [Don't declare arrays or objects directly on Components](https://poteto.github.io/component-best-practices/#/leaky). Instead, add them on init. This is so we can ensure that each instance of the Component has its own independent state.
- * [Don't introduce side-effects in computed properties](https://github.com/ember-best-practices/eslint-plugin-ember-best-practices/blob/master/guides/rules/no-side-effect-cp.md#no-computed-property-side-effects). It will make reasoning about the origin of the change much harder and invalidates proper data flow throughout an Ember application. Data should flows down from the route and send actions back up to modify that data -- where the child does not actually own the data.
-
-```javascript
-  import Component from "@ember/component"
-  import { filterBy, alias } from "@ember/object/computed";
-
-  export default Component.extend({
-    // GOOD: Don't declare arrays or objects directly on Components
-    // GOOD: Override init
-    // GOOD: Don't forget `_super()`
-    init() {
-      this._super(...arguments);
-      
-      set(this, 'users', [
-        { name: 'Foo', age: 15 },
-        { name: 'Bar', age: 16 },
-        { name: 'Baz', age: 15 }
-      ]);
-    },
-
-    // GOOD:
-    fifteen: filterBy('users', 'age', 15),
-    fifteenAmount: alias('fifteen.length'),
-
-    //////////////////////////////////////////////////////////////////
-
-    // BAD
-    fifteenAmount: 0,
-    fifteen: computed('users', function() {
-      const fifteen = this.get('users').filterBy('items', 'age', 15);
-      this.set('fifteenAmount', fifteen.length); // SIDE EFFECT!
-      return fifteen;
-    })
-  });
 ```
 
 ## Git
